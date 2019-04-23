@@ -48,18 +48,24 @@ We provide a command line interface(CLI) of BERTScore as well as a python module
 For the CLI, you can use it as follows:
 1. To evaluate English text files:
 
+We provide example inputs under `./example`.
+
 ```sh
-bert-score -r refs.txt -c hyps.txt --bert bert-base-uncased 
+bert-score -r example/refs.txt -c example/hyps.txt --bert bert-base-uncased 
 ```
 2. To evaluate Chinese text files:
 
+Please format your input files similar to the ones in `./example`.
+
 ```sh
-bert-score -r refs.txt -c hyps.txt --bert bert-base-chinese
+bert-score -r [references] -c [candidates] --bert bert-base-chinese
 ```
 3. To evaluate text files in other languages:
 
+Please format your input files similar to the ones in `./example`.
+
 ```sh
-bert-score -r refs.txt -c hyps.txt
+bert-score -r [references] -c [candidates]
 ```
 See more options by `bert-score -h`.
 
