@@ -32,10 +32,15 @@ If you find this repo useful, please cite:
 ```
 
 ### Installation
-Install requiremnts by `pip install -r requiremnts.txt`
+Install from pip by 
+
+```sh
+pip install bert-score
+```
 
 Install it from the source by:
 ```sh
+pip install -r requiremnts.txt
 git clone https://github.com/Tiiiger/bert_score
 cd bert_score
 pip install .
