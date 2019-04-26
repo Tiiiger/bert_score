@@ -29,7 +29,7 @@ setup(
     tests_require=['pytest'],
     classifiers=[
         'Intended Audience :: Science/Research',
-        'License :: MIT License',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
