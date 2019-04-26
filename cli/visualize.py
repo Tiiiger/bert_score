@@ -24,8 +24,8 @@ def main():
                         choices=bert_types, help='BERT model name (default: bert-base-uncased)')
     parser.add_argument('-l', '--num_layers', default=9, help='use first N layer in BERT (default: 9)')
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
-    parser.add_argument('-r', '--ref', required=True, help='reference file path')
-    parser.add_argument('-c', '--cand', required=True,help='candidate file path')
+    parser.add_argument('-r', '--ref', required=True, help='reference sentence')
+    parser.add_argument('-c', '--cand', required=True,help='candidate sentence')
     parser.add_argument('-o', '--output_file_name', default='similarity',help='output file name')
 
     args = parser.parse_args()
