@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import bert_score
+# import bert_score
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -10,6 +10,7 @@ from collections import defaultdict, Counter
 from multiprocessing import Pool
 from functools import partial
 
+__all__ = ['bert_types']
 
 bert_types = [
     'bert-base-uncased',
@@ -36,7 +37,7 @@ def bert_encode(model, x, attention_mask):
     model.eval()
     x_seg = torch.zeros_like(x, dtype=torch.long)
     with torch.no_grad():
-        x_encoded_layers, pooled_output = model(x, x_seg, attention_mask=attention_mask, output_all_encoded_layers=True)
+        x_encoded_layers, pooled_output = model(x, x_seg, attention_mask=attention_mask, output_all_encoded_layers=False)
     return x_encoded_layers
 
 
@@ -94,11 +95,11 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
         for i in range(0, len(all_sens), batch_size):
             batch_embedding = bert_encode(model, padded_sens[i:i+batch_size],
                                           attention_mask=mask[i:i+batch_size])
-            batch_embedding = torch.stack(batch_embedding)
+            # batch_embedding = torch.stack(batch_embedding)
             embeddings.append(batch_embedding)
             del batch_embedding
 
-    total_embedding = torch.cat(embeddings, dim=-3)
+    total_embedding = torch.cat(embeddings, dim=0)
 
     return total_embedding, lens, mask, padded_idf
 
@@ -109,14 +110,11 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
     hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
 
-    batch_size = ref_embedding.size(1)
-    layers = 1
-    ref_embedding = ref_embedding[8]
-    hyp_embedding = hyp_embedding[8]
+    batch_size = ref_embedding.size(0)
 
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
     masks = torch.bmm(hyp_masks.unsqueeze(2).float(), ref_masks.unsqueeze(1).float())
-    masks = masks.unsqueeze(0).expand(layers, batch_size, masks.size(1), masks.size(2))\
+    masks = masks.expand(batch_size, masks.size(1), masks.size(2))\
                               .contiguous().view_as(sim)
 
     masks = masks.float().to(sim.device)
@@ -127,17 +125,12 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
 
     hyp_idf.div_(hyp_idf.sum(dim=1, keepdim=True))
     ref_idf.div_(ref_idf.sum(dim=1, keepdim=True))
-    precision_scale = hyp_idf.unsqueeze(0).expand(layers, *hyp_idf.size())\
-                             .contiguous().view(-1, *hyp_idf.size()[1:]).to(word_precision.device)
-    recall_scale = ref_idf.unsqueeze(0).expand(layers, *ref_idf.size())\
-                          .contiguous().view(-1, *ref_idf.size()[1:]).to(word_recall.device)
+    precision_scale = hyp_idf.to(word_precision.device)
+    recall_scale = ref_idf.to(word_recall.device)
     P = (word_precision * precision_scale).sum(dim=1)
     R = (word_recall * recall_scale).sum(dim=1)
     
     F = 2 * P * R / (P + R)
-    P = P.view(layers, batch_size)
-    R = R.view(layers, batch_size)
-    F = F.view(layers, batch_size)
     return P, R, F
 
 
@@ -153,7 +146,6 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
                                        device=device)
 
         P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats)
-        preds.append(torch.stack((P, R, F1), dim=2).cpu())
-    preds = torch.cat(preds, dim=1).squeeze_(0)
+        preds.append(torch.stack((P, R, F1), dim=1).cpu())
+    preds = torch.cat(preds, dim=0)
     return preds
-

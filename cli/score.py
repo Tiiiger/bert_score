@@ -16,7 +16,7 @@ def main():
     parser = argparse.ArgumentParser('Calculate BERTScore')
     parser.add_argument('--bert', default='bert-base-multilingual-cased',
                         choices=bert_score.bert_types, help='BERT model name (default: bert-base-uncased)')
-    parser.add_argument('-l', '--num_layers', default=9, help='use first N layer in BERT (default: 9)')
+    parser.add_argument('-l', '--num_layers', default=8, help='use first N layer in BERT (default: 8)')
     parser.add_argument('-b', '--batch_size', default=64, help='batch size (default: 64)')
     parser.add_argument('--no_idf', action='store_true', help='BERT Score without IDF scaling')
     parser.add_argument('-s', '--seg_level', action='store_true', help='show individual score of each pair')
@@ -39,33 +39,9 @@ def main():
 
     assert len(cands) == len(refs)
 
-    if args.verbose:
-        print('loading BERT model...')
-    tokenizer = BertTokenizer.from_pretrained(args.bert)
-    model = BertModel.from_pretrained(args.bert)
-    model.eval()
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model.to(device)
-
-    # drop unused layers
-    model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:args.num_layers]])
-
-
-    if args.no_idf:
-        idf_dict = defaultdict(lambda: 1.)
-    else:
-        if args.verbose:
-            print('preparing IDF dict...')
-        start = time.perf_counter()
-        idf_dict = bert_score.get_idf_dict(refs, tokenizer)
-        if args.verbose:
-            print('done in {:.2f} seconds'.format(time.perf_counter() - start))
-    if args.verbose:
-        print('calculating scores...')
-    start = time.perf_counter()
-    all_preds = bert_score.bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict, device=device,
-                                                  batch_size=args.batch_size)
-    avg_scores = all_preds.mean(dim=0)
+    all_preds = bert_score.score(cands, refs, bert=args.bert, num_layers=args.num_layers, verbose=args.verbose,
+                                 no_idf=args.no_idf, batch_size=args.batch_size)
+    avg_scores = [s.mean(dim=0) for s in all_preds]
     P = avg_scores[0].cpu().item()
     R = avg_scores[1].cpu().item()
     F1 = avg_scores[2].cpu().item()
