@@ -45,7 +45,7 @@ def main():
     cand = args.cand
     ref = args.ref
     fname = args.output_file_name
-    plot_example(cand, ref, model, tokenizer, idf_dict, device=device, fname = fname)
+    bert_score.plot_example(cand, ref, model, tokenizer, idf_dict, device=device, fname = fname)
 
 
 if __name__ == "__main__":
