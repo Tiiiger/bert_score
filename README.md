@@ -40,9 +40,9 @@ pip install bert-score
 
 Install it from the source by:
 ```sh
-pip install -r requiremnts.txt
 git clone https://github.com/Tiiiger/bert_score
 cd bert_score
+pip install -r requiremnts.txt
 pip install .
 ```
 
