@@ -23,6 +23,7 @@ setup(
     entry_points={
         'console_scripts': [
             "bert-score=cli.score:main",
+            "bert-score-show=cli.visualize:main",
         ]
     },
     # python_requires='>=3.5.0',

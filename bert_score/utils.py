@@ -1,9 +1,4 @@
 import torch
-import numpy as np
-# import bert_score
-import matplotlib
-import matplotlib.pyplot as plt
-
 from math import log
 from itertools import chain
 from collections import defaultdict, Counter
@@ -133,7 +128,6 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     F = 2 * P * R / (P + R)
     return P, R, F
 
-
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
                        batch_size=256, device='cuda:0'):
     preds = []
@@ -150,61 +144,3 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
     preds = torch.cat(preds, dim=0)
     return preds
 
-def plot_example(h, r, model, tokenizer, idf_dict, device='cuda:0', fname='similarity'):
-    h_tokens = ['[CLS]'] + tokenizer.tokenize(h) + ['[SEP]']
-    r_tokens = ['[CLS]'] + tokenizer.tokenize(r) + ['[SEP]']
-
-    ref_embedding, ref_lens, ref_masks, padded_idf = get_bert_embedding([r], model, tokenizer, idf_dict,
-                                       device=device)
-    hyp_embedding, ref_lens, ref_masks, padded_idf = get_bert_embedding([h], model, tokenizer, idf_dict,
-                                       device=device)
-
-    ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
-    hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
-
-    batch_size = ref_embedding.size(1)
-    ref_embedding = ref_embedding[8]
-    hyp_embedding = hyp_embedding[8]
-
-    sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2)).cpu().numpy()
-    sim  = np.squeeze(sim)
-    
-    # remove [CLS] and [SEP] tokens 
-    r_tokens = r_tokens[1:-1]
-    h_tokens = h_tokens[1:-1]
-    sim = sim[1:-1,1:-1]
-
-    fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
-    im = ax.imshow(sim, cmap='Blues')
-
-    # We want to show all ticks...
-    ax.set_xticks(np.arange(len(r_tokens)))
-    ax.set_yticks(np.arange(len(h_tokens)))
-    # ... and label them with the respective list entries
-    ax.set_xticklabels(r_tokens, fontsize=10)
-    ax.set_yticklabels(h_tokens, fontsize=10)
-    plt.xlabel("Refernce", fontsize=10)
-    plt.ylabel("Candidate", fontsize=10)
-
-    # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-             rotation_mode="anchor")
-
-    # Loop over data dimensions and create text annotations.
-    for i in range(len(h_tokens)):
-        for j in range(len(r_tokens)):
-            text = ax.text(j, i, '{:.3f}'.format(sim[i, j]),
-                           ha="center", va="center", color="k" if sim[i, j] < 0.6 else "w")
-
-    P = sim.max(1).mean()
-    R = sim.max(0).mean()
-    F1 = 2 * P * R / (P + R)
-
-    fig.tight_layout()
-    plt.title("BERT-F1: {:.3f}".format(F1), fontsize=10)
-    plt.savefig(fname+'.png', dpi=400)
-    plt.show()
-
-    
-    print("Saved figure to file: ", fname+".png")
-    
