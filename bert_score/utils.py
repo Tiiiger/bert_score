@@ -181,10 +181,10 @@ def plot_example(h, r, model, tokenizer, idf_dict, device='cuda:0', fname='simil
     ax.set_xticks(np.arange(len(r_tokens)))
     ax.set_yticks(np.arange(len(h_tokens)))
     # ... and label them with the respective list entries
-    ax.set_xticklabels(r_tokens, fontsize=14)
-    ax.set_yticklabels(h_tokens, fontsize=14)
-    plt.xlabel("Refernce", fontsize=14)
-    plt.ylabel("Candidate", fontsize=14)
+    ax.set_xticklabels(r_tokens, fontsize=10)
+    ax.set_yticklabels(h_tokens, fontsize=10)
+    plt.xlabel("Refernce", fontsize=10)
+    plt.ylabel("Candidate", fontsize=10)
 
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
@@ -196,12 +196,15 @@ def plot_example(h, r, model, tokenizer, idf_dict, device='cuda:0', fname='simil
             text = ax.text(j, i, '{:.3f}'.format(sim[i, j]),
                            ha="center", va="center", color="k" if sim[i, j] < 0.6 else "w")
 
-    fig.tight_layout()
-    plt.savefig(fname+'.png', dpi=400)
-    plt.show()
     P = sim.max(1).mean()
     R = sim.max(0).mean()
     F1 = 2 * P * R / (P + R)
+
+    fig.tight_layout()
+    plt.title("BERT-F1: {:.3f}".format(F1), fontsize=10)
+    plt.savefig(fname+'.png', dpi=400)
+    plt.show()
+
     
-    print("BERT-F1: {:.3f}".format(F1))
+    print("Saved figure to file: ", fname+".png")
     
