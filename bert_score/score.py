@@ -23,6 +23,9 @@ def score(cands, refs, bert="bert-base-multilingual-cased", num_layers=8, verbos
 
     if no_idf:
         idf_dict = defaultdict(lambda: 1.)
+        # set idf for [SEP] and [CLS] to 0
+        idf_dict[101] = 0
+        idf_dict[102] = 0
     else:
         if verbose:
             print('preparing IDF dict...')
