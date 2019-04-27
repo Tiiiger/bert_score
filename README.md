@@ -74,18 +74,8 @@ bert-score -r [references] -c [candidates]
 ```
 See more options by `bert-score -h`.
 
-For the python module, please refer to [`cli/score.py`](https://github.com/Tiiiger/bert_score/blob/master/cli/score.py).
-
-<!---
-#### Visualization
-Because BERTScore measure sentence similarity by accumulating word similarites,
-we can visualize it easily.
---->
-<!---
-Below is an example where we visualize the pairwise cosine similarity of words
-in the reference and candidate sentences.
---->
-<!-- ![]() -->
+For the python module, we provide a [demo](https://github.com/Tiiiger/bert_score/blob/master/example/Demo.ipynb). 
+Please refer to [`bert_score/score.py`](https://github.com/Tiiiger/bert_score/blob/master/bert_score/score.py) for more details.
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome [bert](https://github.com/google-research/bert) and [pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).
