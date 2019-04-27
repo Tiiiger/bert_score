@@ -8,12 +8,27 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .utils import get_idf_dict, bert_cos_score_idf, get_bert_embedding
+from .utils import get_idf_dict, bert_cos_score_idf,\
+                   get_bert_embedding, bert_types
 
 __all__ = ['score', 'plot_example']
 
-def score(cands, refs, bert="bert-base-multilingual-cased", num_layers=8, verbose=False, no_idf=False, batch_size=64):
+def score(cands, refs, bert="bert-base-multilingual-cased",
+          num_layers=8, verbose=False, no_idf=False, batch_size=64):
+    """
+    BERTScore metric.
+
+    Args:
+        - :param: `cands` (list of str): candidate sentences
+        - :param: `refs` (list of str): reference sentences
+        - :param: `bert` (str): bert specification
+        - :param: `num_layers` (int): the layer of representation to use
+        - :param: `verbose` (bool): turn on intermediate status update
+        - :param: `no_idf` (bool): do not use idf weighting
+        - :param: `batch_size` (int): bert score processing batch size
+    """
     assert len(cands) == len(refs)
+    assert bert in bert_types
 
     tokenizer = BertTokenizer.from_pretrained(bert)
     model = BertModel.from_pretrained(bert)
@@ -53,6 +68,17 @@ def score(cands, refs, bert="bert-base-multilingual-cased", num_layers=8, verbos
 
 def plot_example(h, r, verbose=False, bert="bert-base-multilingual-cased",
                  num_layers=8, fname=''):
+    """
+    BERTScore metric.
+
+    Args:
+        - :param: `h` (str): a candidate sentence
+        - :param: `r` (str): a reference sentence
+        - :param: `verbose` (bool): turn on intermediate status update
+        - :param: `bert` (str): bert specification
+        - :param: `num_layers` (int): the layer of representation to use
+    """
+    assert bert in bert_types
 
     if verbose:
         print('loading BERT model...')
