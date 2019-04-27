@@ -4,6 +4,7 @@ from itertools import chain
 from collections import defaultdict, Counter
 from multiprocessing import Pool
 from functools import partial
+from tqdm import tqdm
 
 __all__ = ['bert_types']
 
@@ -129,9 +130,11 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     return P, R, F
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
-                       batch_size=256, device='cuda:0'):
+                       verbose=False, batch_size=256, device='cuda:0'):
     preds = []
-    for batch_start in range(0, len(refs), batch_size):
+    iter_range = range(0, len(refs), batch_size)
+    if verbose: iter_range = tqdm(iter_range)
+    for batch_start in iter_range:
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]
         ref_stats = get_bert_embedding(batch_refs, model, tokenizer, idf_dict,
@@ -143,4 +146,3 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
     preds = torch.cat(preds, dim=0)
     return preds
-

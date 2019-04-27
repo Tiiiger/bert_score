@@ -55,8 +55,8 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
     if verbose:
         print('calculating scores...')
     start = time.perf_counter()
-    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict, device=device,
-                                   batch_size=batch_size)
+    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
+                                   verbose=verbose, device=device, batch_size=batch_size)
 
     P = all_preds[:, 0].cpu()
     R = all_preds[:, 1].cpu()
