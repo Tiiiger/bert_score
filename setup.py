@@ -17,7 +17,7 @@ setup(
     install_requires=['torch>=0.4.1',
                       'numpy',
                       'requests',
-                      'tqdm',
+                      'tqdm>=4.31.1',
                       'matplotlib',
                       'pytorch-pretrained-bert>=0.6.1'],
     entry_points={
