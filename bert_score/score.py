@@ -108,12 +108,12 @@ def plot_example(h, r, verbose=False, bert="bert-base-multilingual-cased",
             text = ax.text(j, i, '{:.3f}'.format(sim[i, j]),
                            ha="center", va="center", color="k" if sim[i, j] < 0.6 else "w")
 
-    P = sim.max(1).mean()
-    R = sim.max(0).mean()
-    F1 = 2 * P * R / (P + R)
+#     P = sim.max(1).mean()
+#     R = sim.max(0).mean()
+#     F1 = 2 * P * R / (P + R)
 
     fig.tight_layout()
-    plt.title("BERT-F1: {:.3f}".format(F1), fontsize=10)
+#     plt.title("BERT-F1: {:.3f}".format(F1), fontsize=10)
     if fname != "":
         print("Saved figure to file: ", fname+".png")
         plt.savefig(fname+'.png', dpi=100)
