@@ -4,7 +4,7 @@ from itertools import chain
 from collections import defaultdict, Counter
 from multiprocessing import Pool
 from functools import partial
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 __all__ = ['bert_types']
 
