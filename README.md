@@ -77,5 +77,11 @@ See more options by `bert-score -h`.
 For the python module, we provide a [demo](https://github.com/Tiiiger/bert_score/blob/master/example/Demo.ipynb). 
 Please refer to [`bert_score/score.py`](https://github.com/Tiiiger/bert_score/blob/master/bert_score/score.py) for more details.
 
+Running BERTScore can be computationally intensive (because it uses BERT :p).
+Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
+can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
+
 ### Acknowledgement
-This repo wouldn't be possible without the awesome [bert](https://github.com/google-research/bert) and [pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).
+This repo wouldn't be possible without the awesome
+[bert](https://github.com/google-research/bert) and
+[pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).
