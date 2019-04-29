@@ -86,16 +86,26 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
 
     if batch_size == -1: batch_size = len(all_sens)
 
-    embeddings = []
-    with torch.no_grad():
-        for i in range(0, len(all_sens), batch_size):
-            batch_embedding = bert_encode(model, padded_sens[i:i+batch_size],
-                                          attention_mask=mask[i:i+batch_size])
-            # batch_embedding = torch.stack(batch_embedding)
-            embeddings.append(batch_embedding)
-            del batch_embedding
+    # Compute indices of unique inputs
+    unique_inputs, unique_indices = set(), []
+    for i, (sen, mask_row) in enumerate(zip(padded_sens, mask)):
+        sen = tuple(sen.numpy())
+        mask_row = tuple(mask_row.numpy())
+        input = (sen, mask_row)
+        if input not in unique_inputs:
+            unique_indices.append(i)
+        unique_inputs.add(input)
 
-    total_embedding = torch.cat(embeddings, dim=0)
+    # Embed each unique input
+    sen_to_embedding = {}
+    with torch.no_grad():
+        for i in range(0, len(unique_inputs), batch_size):
+            idxs = unique_indices[i:i+batch_size]
+            batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
+            for idx, embed in zip(idxs, batch_embedding):
+                sen = all_sens[idx]
+                sen_to_embedding[sen] = embed
+    total_embedding = torch.stack([sen_to_embedding[sen] for sen in all_sens])
 
     return total_embedding, lens, mask, padded_idf
 
@@ -125,7 +135,7 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     recall_scale = ref_idf.to(word_recall.device)
     P = (word_precision * precision_scale).sum(dim=1)
     R = (word_recall * recall_scale).sum(dim=1)
-    
+
     F = 2 * P * R / (P + R)
     return P, R, F
 
