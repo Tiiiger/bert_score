@@ -89,9 +89,7 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
     # Compute indices of unique inputs
     unique_inputs, unique_indices = set(), []
     for i, (sen, mask_row) in enumerate(zip(padded_sens, mask)):
-        sen = tuple(sen.numpy())
-        mask_row = tuple(mask_row.numpy())
-        input = (sen, mask_row)
+        input = (tuple(sen.tolist()), tuple(mask_row.tolist()))
         if input not in unique_inputs:
             unique_indices.append(i)
         unique_inputs.add(input)
