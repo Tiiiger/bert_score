@@ -81,6 +81,16 @@ Running BERTScore can be computationally intensive (because it uses BERT :p).
 Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
 can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
 
+#### Practical Tips
+
+* BERTScore relies on inverse document frequency (idf) on the reference
+  sentences to weigh word importance. However, when the set of reference
+  sentences become too small, the idf score would become inaccurate/invalid.
+  Please consider turning off idf scaling, by setting `no_idf=True` when calling
+  `bert_score.score` function.
+* When you are low on GPU memory, consider setting `batch_size` when calling
+  `bert_score.score` function.
+
 ### Acknowledgement
 This repo wouldn't be possible without the awesome
 [bert](https://github.com/google-research/bert) and
