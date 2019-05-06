@@ -14,7 +14,9 @@ from .utils import get_idf_dict, bert_cos_score_idf,\
 __all__ = ['score', 'plot_example']
 
 def score(cands, refs, bert="bert-base-multilingual-cased",
-          num_layers=8, verbose=False, no_idf=False, batch_size=64):
+          num_layers=8, verbose=False, no_idf=False,
+          sen_to_embedding=None, batch_size=64,
+          get_idf_dict_nthreads=1):
     """
     BERTScore metric.
 
@@ -25,19 +27,26 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         - :param: `num_layers` (int): the layer of representation to use
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `no_idf` (bool): do not use idf weighting
+        - :param: `sen_to_embedding` (dict): a map of string-->bert_embedding
         - :param: `batch_size` (int): bert score processing batch size
+        - :param: `get_idf_dict_nthreads` (int): the number of threads to use
+            when composing the idf dict
     """
     assert len(cands) == len(refs)
     assert bert in bert_types
 
     tokenizer = BertTokenizer.from_pretrained(bert)
-    model = BertModel.from_pretrained(bert)
-    model.eval()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model.to(device)
-
-    # drop unused layers
-    model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+    if not sen_to_embedding:
+        if verbose:
+            print(f'loading {bert} model...')
+        model = BertModel.from_pretrained(bert)
+        model.eval()
+        model.to(device)
+        # drop unused layers
+        model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+    else:
+        model = None
 
     if no_idf:
         idf_dict = defaultdict(lambda: 1.)
@@ -46,16 +55,16 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         idf_dict[102] = 0
     else:
         if verbose:
-            print('preparing IDF dict...')
+            print(f'preparing IDF dict with {get_idf_dict_nthreads} threads...')
         start = time.perf_counter()
-        idf_dict = get_idf_dict(refs, tokenizer)
+        idf_dict = get_idf_dict(refs, tokenizer, get_idf_dict_nthreads)
         if verbose:
             print('done in {:.2f} seconds'.format(time.perf_counter() - start))
 
     if verbose:
         print('calculating scores...')
     start = time.perf_counter()
-    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
+    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict, sen_to_embedding,
                                    verbose=verbose, device=device, batch_size=batch_size)
 
     P = all_preds[:, 0].cpu()
@@ -107,7 +116,7 @@ def plot_example(h, r, verbose=False, bert="bert-base-multilingual-cased",
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2)).cpu()
     sim = sim.squeeze(0).numpy()
 
-    # remove [CLS] and [SEP] tokens 
+    # remove [CLS] and [SEP] tokens
     r_tokens = r_tokens[1:-1]
     h_tokens = h_tokens[1:-1]
     sim = sim[1:-1,1:-1]

@@ -44,7 +44,7 @@ def process(a, tokenizer=None):
     return set(a)
 
 
-def get_idf_dict(arr, tokenizer, nthreads=4):
+def get_idf_dict(arr, tokenizer, nthreads):
     idf_count = Counter()
     num_docs = len(arr)
 
@@ -77,34 +77,37 @@ def collate_idf(arr, tokenize, numericalize, idf_dict,
 
 
 def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
-                       batch_size=-1, device='cuda:0'):
+                       sen_to_embedding=None, batch_size=-1, device='cuda:0'):
 
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
                                                       tokenizer.tokenize, tokenizer.convert_tokens_to_ids,
                                                       idf_dict,
                                                       device=device)
 
-    if batch_size == -1: batch_size = len(all_sens)
+    if not sen_to_embedding:
+        if batch_size == -1: batch_size = len(all_sens)
 
-    # Compute indices of unique inputs
-    unique_inputs, unique_indices = set(), []
-    for i, (sen, mask_row) in enumerate(zip(padded_sens, mask)):
-        input = (tuple(sen.tolist()), tuple(mask_row.tolist()))
-        if input not in unique_inputs:
-            unique_indices.append(i)
-        unique_inputs.add(input)
+        # Compute indices of unique inputs
+        unique_inputs, unique_indices = set(), []
+        for i, (sen, mask_row) in enumerate(zip(padded_sens, mask)):
+            input = (tuple(sen.tolist()), tuple(mask_row.tolist()))
+            if input not in unique_inputs:
+                unique_indices.append(i)
+            unique_inputs.add(input)
 
-    # Embed each unique input
-    sen_to_embedding = {}
-    with torch.no_grad():
-        for i in range(0, len(unique_inputs), batch_size):
-            idxs = unique_indices[i:i+batch_size]
-            batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
-            for idx, embed in zip(idxs, batch_embedding):
-                sen = all_sens[idx]
-                sen_to_embedding[sen] = embed
-    total_embedding = torch.stack([sen_to_embedding[sen] for sen in all_sens])
+        # Embed each unique input
+        sen_to_embedding = {}
+        with torch.no_grad():
+            for i in range(0, len(unique_inputs), batch_size):
+                idxs = unique_indices[i:i+batch_size]
+                batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
+                for idx, embed in zip(idxs, batch_embedding):
+                    sen = all_sens[idx]
+                    sen_to_embedding[sen] = embed
 
+    total_embedding = torch.stack([torch.FloatTensor(sen_to_embedding[sen]) for sen in all_sens])
+    import pdb; pdb.set_trace()
+    
     return total_embedding, lens, mask, padded_idf
 
 
@@ -137,7 +140,7 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     F = 2 * P * R / (P + R)
     return P, R, F
 
-def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
+def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
                        verbose=False, batch_size=256, device='cuda:0'):
     preds = []
     iter_range = range(0, len(refs), batch_size)
@@ -146,9 +149,9 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]
         ref_stats = get_bert_embedding(batch_refs, model, tokenizer, idf_dict,
-                                       device=device)
+                                       sen_to_embedding, device=device)
         hyp_stats = get_bert_embedding(batch_hyps, model, tokenizer, idf_dict,
-                                       device=device)
+                                       sen_to_embedding, device=device)
 
         P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats)
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
