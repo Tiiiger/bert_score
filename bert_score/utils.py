@@ -81,7 +81,8 @@ def collate_idf(arr, tokenize, numericalize, idf_dict,
 
 
 def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
-                       sen_to_embedding=None, batch_size=-1, device='cuda:0'):
+                       sen_to_embedding=None, batch_size=-1, device='cuda:0',
+                       pad="[PAD]"):
 
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
                                                       tokenizer.tokenize, tokenizer.convert_tokens_to_ids,
@@ -106,12 +107,19 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                 idxs = unique_indices[i:i+batch_size]
                 batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
                 for idx, embed in zip(idxs, batch_embedding):
-                    sen = padded_sens[idx]
-                    sen_to_embedding[sen] = embed
+                    sen = all_sens[idx]
+                    sen_to_embedding[sen] = embed[:lens[idx]]
+
+        # Record embedding for `pad` token
+        padded_sens_PAD, padded_idf_PAD, lens_PAD, mask_PAD = collate_idf(
+            ["[PAD]"], tokenizer.tokenize, tokenizer.convert_tokens_to_ids, idf_dict, device=device)
+        pad_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])  does this actually work? or are these context dependent?
     else:
         sen_to_embedding = {sen: torch.FloatTensor(emb).to(device) for sen, emb in sen_to_embedding.items()}
 
-    total_embedding = torch.stack([sen_to_embedding[sen] for sen in all_sens])
+    embeddings = []
+    for sen, sen_len in zip(all_sens, lens):
+        embed = sen_to_embedding[sen]
     return total_embedding, lens, mask, padded_idf
 
 
