@@ -8,7 +8,7 @@ from functools import partial
 from tqdm.auto import tqdm
 from pytorch_pretrained_bert import BertTokenizer, BertModel
 import pandas as pd
-import feather
+
 
 __all__ = ['bert_types']
 
@@ -106,10 +106,12 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                 idxs = unique_indices[i:i+batch_size]
                 batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
                 for idx, embed in zip(idxs, batch_embedding):
-                    sen = all_sens[idx]
+                    sen = padded_sens[idx]
                     sen_to_embedding[sen] = embed
+    else:
+        sen_to_embedding = {sen: torch.FloatTensor(emb).to(device) for sen, emb in sen_to_embedding.items()}
 
-    total_embedding = torch.stack([torch.FloatTensor(sen_to_embedding[sen]) for sen in all_sens])
+    total_embedding = torch.stack([sen_to_embedding[sen] for sen in all_sens])
     return total_embedding, lens, mask, padded_idf
 
 
@@ -160,8 +162,7 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
     preds = torch.cat(preds, dim=0)
     return preds
 
-def precompute_sen_embeddings(sens, output_path,
-                              bert="bert-base-multilingual-cased",
+def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
                               num_layers=8, verbose=False, no_idf=False,
                               batch_size=64, get_idf_dict_nthreads=1):
     """
@@ -202,15 +203,14 @@ def precompute_sen_embeddings(sens, output_path,
 
     # Compute BERT embeddings
     sen_to_embedding = {}
-    sens = set(sens)
+    sens = list(set(sens))
     iter_range = range(0, len(sens), batch_size)
     if verbose: iter_range = tqdm(iter_range)
     for batch_start in iter_range:
         batch_sens = sens[batch_start:batch_start+batch_size]
         total_embedding, lens, mask, padded_idf = get_bert_embedding(batch_sens, model, tokenizer, idf_dict, device=device)
-        for sen, embedding in zip(batch_sens, total_embedding):
+        for sen, embedding, sen_len in zip(batch_sens, total_embedding, lens):
             for i, row in enumerate(embedding):
-                sen_to_embedding[(sen, i)] = row.tolist()
-
-    # Write BERT embeddings to disk
-    feather.write_dataframe(pd.DataFrame(sen_to_embedding).T, output_path)
+                if i + 1 <= sen_len:
+                    sen_to_embedding[(sen, i)] = row.tolist()
+    return pd.DataFrame(sen_to_embedding).T
