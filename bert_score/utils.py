@@ -1,3 +1,4 @@
+import time
 import torch
 from math import log
 from itertools import chain
@@ -5,6 +6,9 @@ from collections import defaultdict, Counter
 from multiprocessing import Pool
 from functools import partial
 from tqdm.auto import tqdm
+from pytorch_pretrained_bert import BertTokenizer, BertModel
+import pandas as pd
+import feather
 
 __all__ = ['bert_types']
 
@@ -106,8 +110,6 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                     sen_to_embedding[sen] = embed
 
     total_embedding = torch.stack([torch.FloatTensor(sen_to_embedding[sen]) for sen in all_sens])
-    import pdb; pdb.set_trace()
-    
     return total_embedding, lens, mask, padded_idf
 
 
@@ -157,3 +159,58 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
     preds = torch.cat(preds, dim=0)
     return preds
+
+def precompute_sen_embeddings(sens, output_path,
+                              bert="bert-base-multilingual-cased",
+                              num_layers=8, verbose=False, no_idf=False,
+                              batch_size=64, get_idf_dict_nthreads=1):
+    """
+    Precompute BERT embeddings for all sentences in `sens`.
+
+    Args:
+        - :param: `sens` (list of str)
+        - :param: `bert` (str): bert specification
+        - :param: `num_layers` (int): the layer of representation to use
+        - :param: `verbose` (bool): turn on intermediate status update
+        - :param: `batch_size` (int): bert score processing batch size
+            when composing the embeddings
+    """
+    assert bert in bert_types
+
+    tokenizer = BertTokenizer.from_pretrained(bert)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if verbose:
+        print(f'loading {bert} model...')
+    model = BertModel.from_pretrained(bert)
+    model.eval()
+    model.to(device)
+    # drop unused layers
+    model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+
+    if no_idf:
+        idf_dict = defaultdict(lambda: 1.)
+        # set idf for [SEP] and [CLS] to 0
+        idf_dict[101] = 0
+        idf_dict[102] = 0
+    else:
+        if verbose:
+            print(f'preparing IDF dict with {get_idf_dict_nthreads} threads...')
+        start = time.perf_counter()
+        idf_dict = get_idf_dict(sens, tokenizer, get_idf_dict_nthreads)
+        if verbose:
+            print('done in {:.2f} seconds'.format(time.perf_counter() - start))
+
+    # Compute BERT embeddings
+    sen_to_embedding = {}
+    sens = set(sens)
+    iter_range = range(0, len(sens), batch_size)
+    if verbose: iter_range = tqdm(iter_range)
+    for batch_start in iter_range:
+        batch_sens = sens[batch_start:batch_start+batch_size]
+        total_embedding, lens, mask, padded_idf = get_bert_embedding(batch_sens, model, tokenizer, idf_dict, device=device)
+        for sen, embedding in zip(batch_sens, total_embedding):
+            for i, row in enumerate(embedding):
+                sen_to_embedding[(sen, i)] = row.tolist()
+
+    # Write BERT embeddings to disk
+    feather.write_dataframe(pd.DataFrame(sen_to_embedding).T, output_path)
