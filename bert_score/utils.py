@@ -108,18 +108,19 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                 batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
                 for idx, embed in zip(idxs, batch_embedding):
                     sen = all_sens[idx]
-                    sen_to_embedding[sen] = embed[:lens[idx]]
-
-        # Record embedding for `pad` token
-        padded_sens_PAD, padded_idf_PAD, lens_PAD, mask_PAD = collate_idf(
-            ["[PAD]"], tokenizer.tokenize, tokenizer.convert_tokens_to_ids, idf_dict, device=device)
-        pad_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])  does this actually work? or are these context dependent?
+                    sen_to_embedding[sen] = embed[:lens[idx]]  # Trim embedding to original sequence length
     else:
         sen_to_embedding = {sen: torch.FloatTensor(emb).to(device) for sen, emb in sen_to_embedding.items()}
 
     embeddings = []
+    max_seq_len = padded_sens.size(-1)
     for sen, sen_len in zip(all_sens, lens):
-        embed = sen_to_embedding[sen]
+        embed = sen_to_embedding[sen].cpu()
+        embed_dim = embed.size(-1)
+        padding = torch.rand(max_seq_len - sen_len, embed_dim)
+        embed = torch.cat([embed, padding])
+        embeddings.append(embed)
+    total_embedding = torch.stack(embeddings)
     return total_embedding, lens, mask, padded_idf
 
 
