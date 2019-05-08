@@ -41,9 +41,9 @@ def bert_encode(model, x, attention_mask):
     return x_encoded_layers
 
 
-def process(a, tokenizer=None):
+def process(a, tokenizer=None, max_len=500):
     if not tokenizer is None:
-        a = ["[CLS]"]+tokenizer.tokenize(a)+["[SEP]"]
+        a = ["[CLS]"] + tokenizer.tokenize(a)[:max_len - 2] + ["[SEP]"]
         a = tokenizer.convert_tokens_to_ids(a)
     return set(a)
 
@@ -52,7 +52,7 @@ def get_idf_dict(arr, tokenizer, nthreads):
     idf_count = Counter()
     num_docs = len(arr)
 
-    process_partial = partial(process, tokenizer=tokenizer)
+    process_partial = partial(process, tokenizer=tokenizer, max_len=tokenizer.max_len)
 
     with Pool(nthreads) as p:
         idf_count.update(chain.from_iterable(p.map(process_partial, arr)))
@@ -62,9 +62,9 @@ def get_idf_dict(arr, tokenizer, nthreads):
     return idf_dict
 
 
-def collate_idf(arr, tokenize, numericalize, idf_dict,
+def collate_idf(arr, tokenize, numericalize, idf_dict, max_len,
                 pad="[PAD]", device='cuda:0'):
-    arr = [["[CLS]"]+tokenize(a)+["[SEP]"] for a in arr]
+    arr = [["[CLS]"] + tokenize(a)[:max_len - 2] + ["[SEP]"] for a in arr]
     arr = [numericalize(a) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
@@ -85,37 +85,36 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                        pad="[PAD]"):
 
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
-                                                      tokenizer.tokenize, tokenizer.convert_tokens_to_ids,
+                                                      tokenizer.tokenize,
+                                                      tokenizer.convert_tokens_to_ids,
                                                       idf_dict,
+                                                      max_len=tokenizer.max_len,
                                                       device=device)
 
     if not sen_to_embedding:
         if batch_size == -1: batch_size = len(all_sens)
 
-        # Compute indices of unique inputs
-        unique_inputs, unique_indices = set(), []
-        for i, (sen, mask_row) in enumerate(zip(padded_sens, mask)):
-            input = (tuple(sen.tolist()), tuple(mask_row.tolist()))
-            if input not in unique_inputs:
-                unique_indices.append(i)
-            unique_inputs.add(input)
+        # Compute indices of unique sens
+        unique_sens, unique_idxs = set(), []
+        for i, sen in enumerate(all_sens):
+            if sen not in unique_sens:
+                unique_idxs.append(i)
+            unique_sens.add(sen)
 
-        # Embed each unique input
+        # Embed each unique sen
         sen_to_embedding = {}
         with torch.no_grad():
-            for i in range(0, len(unique_inputs), batch_size):
-                idxs = unique_indices[i:i+batch_size]
+            for i in range(0, len(unique_sens), batch_size):
+                idxs = unique_idxs[i:i+batch_size]
                 batch_embedding = bert_encode(model, padded_sens[idxs], attention_mask=mask[idxs])
                 for idx, embed in zip(idxs, batch_embedding):
                     sen = all_sens[idx]
-                    sen_to_embedding[sen] = embed[:lens[idx]]  # Trim embedding to original sequence length
-    else:
-        sen_to_embedding = {sen: torch.FloatTensor(emb).to(device) for sen, emb in sen_to_embedding.items()}
+                    sen_to_embedding[sen] = embed[:lens[idx]].cpu()  # Trim embedding to original sequence length
 
     embeddings = []
     max_seq_len = padded_sens.size(-1)
     for sen, sen_len in zip(all_sens, lens):
-        embed = sen_to_embedding[sen].cpu()
+        embed = torch.FloatTensor(sen_to_embedding[sen])
         embed_dim = embed.size(-1)
         padding = torch.rand(max_seq_len - sen_len, embed_dim)
         embed = torch.cat([embed, padding])
