@@ -3,7 +3,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 
 #### Authors:
 * [Tianyi Zhang](https://scholar.google.com/citations?user=OI0HSa0AAAAJ&hl=en)*
-* Varsha Kishore
+* Varsha Kishore*
 * [Felix Wu](https://scholar.google.com.tw/citations?user=sNL8SSoAAAAJ&hl=en)*
 * [Kilian Q. Weinberger](http://kilian.cs.cornell.edu/index.html)
 * [Yoav Artzi](https://yoavartzi.com/)
@@ -77,5 +77,21 @@ See more options by `bert-score -h`.
 For the python module, we provide a [demo](https://github.com/Tiiiger/bert_score/blob/master/example/Demo.ipynb). 
 Please refer to [`bert_score/score.py`](https://github.com/Tiiiger/bert_score/blob/master/bert_score/score.py) for more details.
 
+Running BERTScore can be computationally intensive (because it uses BERT :p).
+Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
+can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
+
+#### Practical Tips
+
+* BERTScore relies on inverse document frequency (idf) on the reference
+  sentences to weigh word importance. However, when the set of reference
+  sentences become too small, the idf score would become inaccurate/invalid.
+  Please consider turning off idf scaling, by setting `no_idf=True` when calling
+  `bert_score.score` function.
+* When you are low on GPU memory, consider setting `batch_size` when calling
+  `bert_score.score` function.
+
 ### Acknowledgement
-This repo wouldn't be possible without the awesome [bert](https://github.com/google-research/bert) and [pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).
+This repo wouldn't be possible without the awesome
+[bert](https://github.com/google-research/bert) and
+[pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).

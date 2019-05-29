@@ -48,7 +48,16 @@ def process(a, tokenizer=None, max_len=500):
     return set(a)
 
 
-def get_idf_dict(arr, tokenizer, nthreads):
+def get_idf_dict(arr, tokenizer, nthreads=4):
+    """
+    Returns mapping from word piece index to its inverse document frequency.
+
+
+    Args:
+        - :param: `arr` (list of str) : sentences to process.
+        - :param: `tokenizer` : a BERT tokenizer corresponds to `model`.
+        - :param: `nthreads` (int) : number of CPU threads to use
+    """
     idf_count = Counter()
     num_docs = len(arr)
 
@@ -64,6 +73,21 @@ def get_idf_dict(arr, tokenizer, nthreads):
 
 def collate_idf(arr, tokenize, numericalize, idf_dict, max_len,
                 pad="[PAD]", device='cuda:0'):
+    """
+    Helper function that pads a list of sentences to hvae the same length and
+    loads idf score for words in the sentences.
+
+    Args:
+        - :param: `arr` (list of str): sentences to process.
+        - :param: `tokenize` : a function that takes a string and return list
+                  of tokens.
+        - :param: `numericalize` : a function that takes a list of tokens and
+                  return list of token indexes.
+        - :param: `idf_dict` (dict): mapping a word piece index to its
+                               inverse document frequency
+        - :param: `pad` (str): the padding token.
+        - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
+    """
     arr = [["[CLS]"] + tokenize(a)[:max_len - 2] + ["[SEP]"] for a in arr]
     arr = [numericalize(a) for a in arr]
 
@@ -83,7 +107,17 @@ def collate_idf(arr, tokenize, numericalize, idf_dict, max_len,
 def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
                        sen_to_embedding=None, batch_size=-1, device='cuda:0',
                        pad="[PAD]"):
+    """
+    Compute BERT embedding in batches.
 
+    Args:
+        - :param: `all_sens` (list of str) : sentences to encode.
+        - :param: `model` : a BERT model from `pytorch_pretrained_bert`.
+        - :param: `tokenizer` : a BERT tokenizer corresponds to `model`.
+        - :param: `idf_dict` (dict) : mapping a word piece index to its
+                               inverse document frequency
+        - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
+    """
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
                                                       tokenizer.tokenize,
                                                       tokenizer.convert_tokens_to_ids,
@@ -125,6 +159,27 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
 
 def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
                    hyp_embedding, hyp_lens, hyp_masks, hyp_idf):
+    """
+    Compute greedy matching based on cosine similarity.
+
+    Args:
+        - :param: `ref_embedding` (torch.Tensor):
+                   embeddings of reference sentences, BxKxd,
+                   B: batch size, K: longest length, d: bert dimenison
+        - :param: `ref_lens` (list of int): list of reference sentence length.
+        - :param: `ref_masks` (torch.LongTensor): BxKxK, BERT attention mask for
+                   reference sentences.
+        - :param: `ref_idf` (torch.Tensor): BxK, idf score of each word
+                   piece in the reference setence
+        - :param: `hyp_embedding` (torch.Tensor):
+                   embeddings of candidate sentences, BxKxd,
+                   B: batch size, K: longest length, d: bert dimenison
+        - :param: `hyp_lens` (list of int): list of candidate sentence length.
+        - :param: `hyp_masks` (torch.LongTensor): BxKxK, BERT attention mask for
+                   candidate sentences.
+        - :param: `hyp_idf` (torch.Tensor): BxK, idf score of each word
+                   piece in the candidate setence
+    """
 
     ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
     hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
@@ -153,9 +208,24 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     F = 2 * P * R / (P + R)
     return P, R, F
 
+
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
-                       verbose=False, batch_size=256, device='cuda:0',
+                       verbose=False, batch_size=64, device='cuda:0',
                        ipynb_mode=False):
+    """
+    Compute BERTScore.
+
+    Args:
+        - :param: `model` : a BERT model in `pytorch_pretrained_bert`
+        - :param: `refs` (list of str): reference sentences
+        - :param: `hyps` (list of str): candidate sentences
+        - :param: `tokenzier` : a BERT tokenizer corresponds to `model`
+        - :param: `idf_dict` : a dictionary mapping a word piece index to its
+                               inverse document frequency
+        - :param: `verbose` (bool): turn on intermediate status update
+        - :param: `batch_size` (int): bert score processing batch size
+        - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
+    """
     preds = []
     iter_range = range(0, len(refs), batch_size)
     if verbose and not ipynb_mode:
@@ -174,6 +244,7 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
     preds = torch.cat(preds, dim=0)
     return preds
+
 
 def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
                               num_layers=8, verbose=False, no_idf=False,
