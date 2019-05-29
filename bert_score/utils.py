@@ -189,6 +189,7 @@ def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `batch_size` (int): bert score processing batch size
             when composing the embeddings
+        - :param: `no_idf` (bool): do not use idf weighting
         - :param: `get_idf_dict_nthreads` (int): number of threads to use
             to comose the idf_dict
         - :param: `state_dict`: optionally pass in a PyTorch state dict
