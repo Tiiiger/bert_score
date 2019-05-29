@@ -105,8 +105,8 @@ def collate_idf(arr, tokenize, numericalize, idf_dict, max_len,
 
 
 def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
-                       sen_to_embedding=None, batch_size=-1, device='cuda:0',
-                       pad="[PAD]"):
+                       sen_to_embedding=None, batch_size=-1,
+                       device='cuda:0', pad="[PAD]"):
     """
     Compute BERT embedding in batches.
 
@@ -116,6 +116,7 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
         - :param: `tokenizer` : a BERT tokenizer corresponds to `model`.
         - :param: `idf_dict` (dict) : mapping a word piece index to its
                                inverse document frequency
+        - :param: `sen_to_embedding` (dict): a map of string->bert_embedding
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
@@ -209,9 +210,9 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     return P, R, F
 
 
-def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
-                       verbose=False, batch_size=64, device='cuda:0',
-                       ipynb_mode=False):
+def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
+                       sen_to_embedding=None, verbose=False,
+                       batch_size=64, device='cuda:0', ipynb_mode=False):
     """
     Compute BERTScore.
 
@@ -222,6 +223,7 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
         - :param: `tokenzier` : a BERT tokenizer corresponds to `model`
         - :param: `idf_dict` : a dictionary mapping a word piece index to its
                                inverse document frequency
+        - :param: `sen_to_embedding` (dict): a map of string->bert_embedding
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'

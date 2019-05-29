@@ -28,7 +28,7 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         - :param: `num_layers` (int): the layer of representation to use
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `no_idf` (bool): do not use idf weighting
-        - :param: `sen_to_embedding` (dict): a map of string-->bert_embedding
+        - :param: `sen_to_embedding` (dict): a map of string->bert_embedding
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `get_idf_dict_nthreads` (int): the number of threads to use
             when composing the idf dict
