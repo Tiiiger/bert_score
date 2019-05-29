@@ -15,8 +15,9 @@ __all__ = ['score', 'plot_example']
 
 def score(cands, refs, bert="bert-base-multilingual-cased",
           num_layers=8, verbose=False, no_idf=False,
-          sen_to_embedding=None, batch_size=64,
-          get_idf_dict_nthreads=1):
+          sen_to_embedding=None, idf_dict=None, batch_size=64,
+          get_idf_dict_nthreads=1, ipynb_mode=False, temp=1,
+          state_dict=None):
     """
     BERTScore metric.
 
@@ -31,6 +32,9 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `get_idf_dict_nthreads` (int): the number of threads to use
             when composing the idf dict
+        - :param: `ipynb_mode` (bool): if True, don't use tqdm counter
+        - :param: `state_dict`: optionally pass in a PyTorch state dict
+            with which to instantiate the bert model
     """
     assert len(cands) == len(refs)
     assert bert in bert_types
@@ -40,7 +44,7 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
     if not sen_to_embedding:
         if verbose:
             print(f'loading {bert} model...')
-        model = BertModel.from_pretrained(bert)
+        model = BertModel.from_pretrained(bert, state_dict=state_dict)
         model.eval()
         model.to(device)
         # drop unused layers
@@ -53,7 +57,7 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         # set idf for [SEP] and [CLS] to 0
         idf_dict[101] = 0
         idf_dict[102] = 0
-    else:
+    if not idf_dict:
         if verbose:
             print(f'preparing IDF dict with {get_idf_dict_nthreads} threads...')
         start = time.perf_counter()
@@ -65,7 +69,8 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         print('calculating scores...')
     start = time.perf_counter()
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict, sen_to_embedding,
-                                   verbose=verbose, device=device, batch_size=batch_size)
+                                   verbose=verbose, device=device, batch_size=batch_size,
+                                   ipynb_mode=ipynb_mode)
 
     P = all_preds[:, 0].cpu()
     R = all_preds[:, 1].cpu()

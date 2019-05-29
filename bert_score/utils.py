@@ -144,6 +144,7 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
 
     hyp_idf.div_(hyp_idf.sum(dim=1, keepdim=True))
     ref_idf.div_(ref_idf.sum(dim=1, keepdim=True))
+
     precision_scale = hyp_idf.to(word_precision.device)
     recall_scale = ref_idf.to(word_recall.device)
     P = (word_precision * precision_scale).sum(dim=1)
@@ -153,11 +154,15 @@ def greedy_cos_idf(ref_embedding, ref_lens, ref_masks, ref_idf,
     return P, R, F
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
-                       verbose=False, batch_size=256, device='cuda:0'):
+                       verbose=False, batch_size=256, device='cuda:0',
+                       ipynb_mode=False):
     preds = []
     iter_range = range(0, len(refs), batch_size)
-    if verbose: iter_range = tqdm(iter_range)
+    if verbose and not ipynb_mode:
+        iter_range = tqdm(iter_range)
     for batch_start in iter_range:
+        if verbose and ipynb_mode and batch_start % 100 == 0:
+            print(f'Batch: {batch_start / batch_size} / {(len(refs) / batch_size)}')
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]
         ref_stats = get_bert_embedding(batch_refs, model, tokenizer, idf_dict,
@@ -172,7 +177,8 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict, sen_to_embedding,
 
 def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
                               num_layers=8, verbose=False, no_idf=False,
-                              batch_size=64, get_idf_dict_nthreads=1):
+                              batch_size=64, get_idf_dict_nthreads=1,
+                              state_dict=None):
     """
     Precompute BERT embeddings for all sentences in `sens`.
 
@@ -183,6 +189,10 @@ def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `batch_size` (int): bert score processing batch size
             when composing the embeddings
+        - :param: `get_idf_dict_nthreads` (int): number of threads to use
+            to comose the idf_dict
+        - :param: `state_dict`: optionally pass in a PyTorch state dict
+            with which to instantiate the bert model
     """
     assert bert in bert_types
 
@@ -190,7 +200,7 @@ def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if verbose:
         print(f'loading {bert} model...')
-    model = BertModel.from_pretrained(bert)
+    model = BertModel.from_pretrained(bert, state_dict=state_dict)
     model.eval()
     model.to(device)
     # drop unused layers
@@ -221,4 +231,4 @@ def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
             for i, row in enumerate(embedding):
                 if i + 1 <= sen_len:
                     sen_to_embedding[(sen, i)] = row.tolist()
-    return pd.DataFrame(sen_to_embedding).T
+    return pd.DataFrame(sen_to_embedding).T, idf_dict
