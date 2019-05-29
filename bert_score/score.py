@@ -16,7 +16,7 @@ __all__ = ['score', 'plot_example']
 def score(cands, refs, bert="bert-base-multilingual-cased",
           num_layers=8, verbose=False, no_idf=False,
           sen_to_embedding=None, idf_dict=None, batch_size=64,
-          get_idf_dict_nthreads=1, ipynb_mode=False, temp=1,
+          get_idf_dict_nthreads=1, ipynb_mode=False,
           state_dict=None):
     """
     BERTScore metric.
