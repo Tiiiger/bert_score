@@ -7,7 +7,6 @@ from multiprocessing import Pool
 from functools import partial
 from tqdm.auto import tqdm
 from pytorch_pretrained_bert import BertTokenizer, BertModel
-import pandas as pd
 
 
 __all__ = ['bert_types']
@@ -150,8 +149,8 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
     max_seq_len = padded_sens.size(-1)
     for sen, sen_len in zip(all_sens, lens):
         embed = torch.FloatTensor(sen_to_embedding[sen])
-        embed_dim = embed.size(-1)
-        padding = torch.rand(max_seq_len - sen_len, embed_dim)
+        seq_len, embed_dim = embed.size(0), embed.size(-1)
+        padding = torch.ones(max_seq_len - seq_len, embed_dim)
         embed = torch.cat([embed, padding])
         embeddings.append(embed)
     total_embedding = torch.stack(embeddings)
@@ -237,11 +236,14 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
             print(f'Batch: {batch_start / batch_size} / {(len(refs) / batch_size)}')
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]
-        ref_stats = get_bert_embedding(batch_refs, model, tokenizer, idf_dict,
-                                       sen_to_embedding, device=device)
-        hyp_stats = get_bert_embedding(batch_hyps, model, tokenizer, idf_dict,
-                                       sen_to_embedding, device=device)
-
+        ref_stats = get_bert_embedding(batch_refs, model, tokenizer,
+                                       idf_dict=idf_dict,
+                                       sen_to_embedding=sen_to_embedding,
+                                       device=device)
+        hyp_stats = get_bert_embedding(batch_hyps, model, tokenizer,
+                                       idf_dict=idf_dict,
+                                       sen_to_embedding=sen_to_embedding,
+                                       device=device)
         P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats)
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
     preds = torch.cat(preds, dim=0)
@@ -302,7 +304,5 @@ def precompute_sen_embeddings(sens, bert="bert-base-multilingual-cased",
         batch_sens = sens[batch_start:batch_start+batch_size]
         total_embedding, lens, mask, padded_idf = get_bert_embedding(batch_sens, model, tokenizer, idf_dict, device=device)
         for sen, embedding, sen_len in zip(batch_sens, total_embedding, lens):
-            for i, row in enumerate(embedding):
-                if i + 1 <= sen_len:
-                    sen_to_embedding[(sen, i)] = row.tolist()
-    return pd.DataFrame(sen_to_embedding).T, idf_dict
+            sen_to_embedding[sen] = embedding[:sen_len].numpy()
+    return sen_to_embedding, idf_dict

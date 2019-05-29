@@ -39,8 +39,8 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
     assert len(cands) == len(refs)
     assert bert in bert_types
 
-    tokenizer = BertTokenizer.from_pretrained(bert)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    tokenizer = BertTokenizer.from_pretrained(bert)
     if not sen_to_embedding:
         if verbose:
             print(f'loading {bert} model...')
@@ -68,7 +68,8 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
     if verbose:
         print('calculating scores...')
     start = time.perf_counter()
-    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict, sen_to_embedding,
+    all_preds = bert_cos_score_idf(model, refs, cands, tokenizer,
+                                   idf_dict=idf_dict, sen_to_embedding=sen_to_embedding,
                                    verbose=verbose, device=device, batch_size=batch_size,
                                    ipynb_mode=ipynb_mode)
 
