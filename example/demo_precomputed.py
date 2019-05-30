@@ -12,14 +12,10 @@ with open("refs.txt") as f:
 P, R, F = score(cands, refs, bert="bert-base-uncased")
 
 # Pre-compute sentence embeddings, then rescore
-
-sen_to_embedding, idf_dict = precompute_sen_embeddings(
-    cands + refs, bert="bert-base-uncased")
-
-
+sen_to_embedding, idf_dict = precompute_sen_embeddings(cands + refs,
+                                                       bert="bert-base-uncased")
 P_pc, R_pc, F_pc = score(cands, refs,
                          sen_to_embedding=sen_to_embedding,
-                         idf_dict=None,
                          bert="bert-base-uncased")
 
 assert np.allclose(P, P_pc)
