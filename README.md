@@ -32,6 +32,9 @@ If you find this repo useful, please cite:
 ```
 
 ### Installation
+* Python version >= 3.6
+* PyTorch version >= 0.4.1
+
 Install from pip by 
 
 ```sh
