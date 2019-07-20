@@ -3,7 +3,7 @@ import time
 import argparse
 import torch
 from collections import defaultdict
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
+from pytorch_transformers import BertTokenizer, BertModel
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
