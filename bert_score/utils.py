@@ -6,17 +6,13 @@ from multiprocessing import Pool
 from functools import partial
 from tqdm.auto import tqdm
 
-__all__ = ['bert_types']
+from pytorch_transformers import BertConfig, XLNetConfig, XLMConfig
 
-bert_types = [
-    'bert-base-uncased',
-    'bert-large-uncased',
-    'bert-base-cased',
-    'bert-large-cased',
-    'bert-base-multilingual-uncased',
-    'bert-base-multilingual-cased',
-    'bert-base-chinese',
-]
+__all__ = ['model_types']
+
+model_types = list(BertConfig.pretrained_config_archive_map.keys())+\
+              list(XLNetConfig.pretrained_config_archive_map.keys())
+              #list(XLMConfig.pretrained_config_archive_map.keys())
 
 def padding(arr, pad_token, dtype=torch.long):
     lens = torch.LongTensor([len(a) for a in arr])
@@ -33,7 +29,10 @@ def bert_encode(model, x, attention_mask):
     model.eval()
     x_seg = torch.zeros_like(x, dtype=torch.long)
     with torch.no_grad():
-        out = model(x, x_seg, attention_mask=attention_mask)
+        if 'xlm' in str(type(model)):
+            out = model(x, attention_mask=attention_mask)
+        else:
+            out = model(x, x_seg, attention_mask=attention_mask)
     return out[0]
 
 

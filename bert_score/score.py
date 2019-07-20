@@ -3,17 +3,19 @@ import time
 import argparse
 import torch
 from collections import defaultdict
-from pytorch_transformers import BertTokenizer, BertModel
+from pytorch_transformers import BertTokenizer, BertModel, \
+                                XLNetTokenizer, XLNetModel, \
+                                XLMTokenizer, XLMModel
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .utils import get_idf_dict, bert_cos_score_idf,\
-                   get_bert_embedding, bert_types
+                   get_bert_embedding, model_types
 
 __all__ = ['score', 'plot_example']
 
-def score(cands, refs, bert="bert-base-multilingual-cased",
+def score(cands, refs, model_type="bert-base-multilingual-cased",
           num_layers=8, verbose=False, no_idf=False, batch_size=64):
     """
     BERTScore metric.
@@ -28,16 +30,36 @@ def score(cands, refs, bert="bert-base-multilingual-cased",
         - :param: `batch_size` (int): bert score processing batch size
     """
     assert len(cands) == len(refs)
-    assert bert in bert_types
+    assert model_type in model_types
 
-    tokenizer = BertTokenizer.from_pretrained(bert)
-    model = BertModel.from_pretrained(bert)
+    if 'bert' in model_type:
+        model_class = BertModel
+        tokenizer_class = BertTokenizer
+    elif 'xlnet' in model_type:
+        model_class = XLNetModel
+        tokenizer_class = XLNetTokenizer
+    elif 'xlm' in model_type:
+        model_class = XLMModel
+        tokenizer_class = XLMTokenizer
+    else:
+        raise ValueError("impossible")
+
+    tokenizer = tokenizer_class.from_pretrained(model_type)
+    model = model_class.from_pretrained(model_type)
     model.eval()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
 
     # drop unused layers
-    model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+    if 'bert' in model_type:
+        model.encoder.layer =\
+            torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+    elif 'xlnet' in model_type:
+        model.layer =\
+            torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+    # elif 'xlm' in model_type:
+    #     model.n_layers = num_layers-1 # 0-index
+    
 
     if no_idf:
         idf_dict = defaultdict(lambda: 1.)
