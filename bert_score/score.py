@@ -57,6 +57,8 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
     elif 'xlnet' in model_type:
         model.layer =\
             torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+    else:
+        raise ValueError("Not supported")
     # elif 'xlm' in model_type:
     #     model.n_layers = num_layers-1 # 0-index
     
