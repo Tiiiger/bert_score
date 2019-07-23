@@ -29,16 +29,13 @@ def bert_encode(model, x, attention_mask):
     model.eval()
     x_seg = torch.zeros_like(x, dtype=torch.long)
     with torch.no_grad():
-        if 'xlm' in str(type(model)):
-            out = model(x, attention_mask=attention_mask)
-        else:
-            out = model(x, x_seg, attention_mask=attention_mask)
+        out = model(x, attention_mask=attention_mask)
     return out[0]
 
 
 def process(a, tokenizer=None):
     if not tokenizer is None:
-        a = ["[CLS]"]+tokenizer.tokenize(a)+["[SEP]"]
+        a = [tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token]
         a = tokenizer.convert_tokens_to_ids(a)
     return set(a)
 
@@ -66,8 +63,7 @@ def get_idf_dict(arr, tokenizer, nthreads=4):
     return idf_dict
 
 
-def collate_idf(arr, tokenize, numericalize, idf_dict,
-                pad="[PAD]", device='cuda:0'):
+def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
     """
     Helper function that pads a list of sentences to hvae the same length and
     loads idf score for words in the sentences.
@@ -83,15 +79,15 @@ def collate_idf(arr, tokenize, numericalize, idf_dict,
         - :param: `pad` (str): the padding token.
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
-    arr = [["[CLS]"]+tokenize(a)+["[SEP]"] for a in arr]
-    arr = [numericalize(a) for a in arr]
+    arr = [[tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token] for a in arr]
+    arr = [tokenizer.convert_tokens_to_ids(a) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
 
-    pad_token = numericalize([pad])[0]
+    pad_token = tokenizer._convert_token_to_id(tokenizer.pad_token)
 
     padded, lens, mask = padding(arr, pad_token, dtype=torch.long)
-    padded_idf, _, _ = padding(idf_weights, pad_token, dtype=torch.float)
+    padded_idf, _, _ = padding(idf_weights, 0, dtype=torch.float)
 
     padded = padded.to(device=device)
     mask = mask.to(device=device)
@@ -114,7 +110,7 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
     """
 
     padded_sens, padded_idf, lens, mask = collate_idf(all_sens,
-                                                      tokenizer.tokenize, tokenizer.convert_tokens_to_ids,
+                                                      tokenizer,
                                                       idf_dict,
                                                       device=device)
 
@@ -125,7 +121,6 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
         for i in range(0, len(all_sens), batch_size):
             batch_embedding = bert_encode(model, padded_sens[i:i+batch_size],
                                           attention_mask=mask[i:i+batch_size])
-            # batch_embedding = torch.stack(batch_embedding)
             embeddings.append(batch_embedding)
             del batch_embedding
 
