@@ -174,8 +174,21 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
     recall_scale = ref_idf.to(word_recall.device)
     P = (word_precision * precision_scale).sum(dim=1)
     R = (word_recall * recall_scale).sum(dim=1)
-    
     F = 2 * P * R / (P + R)
+
+    hyp_zero_mask = hyp_masks.sum(dim=1).eq(2)
+    ref_zero_mask = ref_masks.sum(dim=1).eq(2)
+
+    if torch.any(hyp_zero_mask):
+        print("Empty candidate sentence; Setting precision to be 0.")
+        P = P.masked_fill(hyp_zero_mask, 0.)
+
+    if torch.any(ref_zero_mask):
+        print("Empty candidate sentence; Setting recall to be 0.")
+        R = R.masked_fill(ref_zero_mask, 0.)
+
+    F = F.masked_fill(torch.isnan(F), 0.)
+
     return P, R, F
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
@@ -200,18 +213,22 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
     sentences = dedup_and_sort(refs+hyps)
     embs = []
     iter_range = range(0, len(sentences), batch_size)
+    if verbose: iter_range = tqdm(iter_range)
     stats_dict = dict()
     for batch_start in iter_range:
         sen_batch = sentences[batch_start:batch_start+batch_size]
         embs, masks, padded_idf = get_bert_embedding(sen_batch, model, tokenizer, idf_dict,
                                                      device=device)
+        embs = embs.cpu()
+        masks = masks.cpu()
+        padded_idf = padded_idf.cpu()
         for i, sen in enumerate(sen_batch):
             sequence_len = masks[i].sum().item()
             emb = embs[i, :sequence_len]
             idf = padded_idf[i, :sequence_len]
             stats_dict[sen] = (emb, idf)
         
-    def pad_batch_stats(sen_batch, stats_dict):
+    def pad_batch_stats(sen_batch, stats_dict, device):
         stats = [stats_dict[s] for s in sen_batch]
         emb, idf = zip(*stats)
         lens = [e.size(0) for e in emb]
@@ -224,18 +241,16 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
                         .expand(len(lens), max_len)
             return base < lens.unsqueeze(1)
         pad_mask = length_to_mask(lens)
-        return emb_pad, pad_mask, idf_pad
+        return emb_pad.to(device), pad_mask.to(device), idf_pad.to(device)
         
 
+    device = next(model.parameters()).device
     iter_range = range(0, len(refs), batch_size)
-    if verbose: iter_range = tqdm(iter_range)
     for batch_start in iter_range:
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]
-        ref_stats_old = get_bert_embedding(batch_refs, model, tokenizer, idf_dict,
-                                       device=device)
-        ref_stats = pad_batch_stats(batch_refs, stats_dict)
-        hyp_stats = pad_batch_stats(batch_hyps, stats_dict)
+        ref_stats = pad_batch_stats(batch_refs, stats_dict, device)
+        hyp_stats = pad_batch_stats(batch_hyps, stats_dict, device)
 
         P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats)
         preds.append(torch.stack((P, R, F1), dim=1).cpu())
