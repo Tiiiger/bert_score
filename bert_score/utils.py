@@ -35,8 +35,9 @@ def bert_encode(model, x, attention_mask):
 
 def process(a, tokenizer=None):
     if not tokenizer is None:
-        a = [tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token]
-        a = tokenizer.convert_tokens_to_ids(a)
+        # a = [tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token]
+        # a = tokenizer.convert_tokens_to_ids(a)
+        a = tokenizer.encode(a, add_special_tokens=True)
     return set(a)
 
 
@@ -79,8 +80,9 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
         - :param: `pad` (str): the padding token.
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
-    arr = [[tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token] for a in arr]
-    arr = [tokenizer.convert_tokens_to_ids(a) for a in arr]
+    # arr = [[tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token] for a in arr]
+    # arr = [tokenizer.convert_tokens_to_ids(a) for a in arr]
+    arr = [tokenizer.encode(a, add_special_tokens=True) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
 
