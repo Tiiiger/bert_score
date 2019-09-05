@@ -3,9 +3,7 @@ import time
 import argparse
 import torch
 from collections import defaultdict
-from pytorch_transformers import BertTokenizer, BertModel, \
-                                XLNetTokenizer, XLNetModel, \
-                                XLMTokenizer, XLMModel
+from pytorch_transformers import AutoModel, AutoTokenizer
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,35 +30,23 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
     assert len(cands) == len(refs)
     assert model_type in model_types
 
-    if 'bert' in model_type:
-        model_class = BertModel
-        tokenizer_class = BertTokenizer
-    elif 'xlnet' in model_type:
-        model_class = XLNetModel
-        tokenizer_class = XLNetTokenizer
-    elif 'xlm' in model_type:
-        model_class = XLMModel
-        tokenizer_class = XLMTokenizer
-    else:
-        raise ValueError("impossible")
-
-    tokenizer = tokenizer_class.from_pretrained(model_type)
-    model = model_class.from_pretrained(model_type)
+    tokenizer = AutoTokenizer.from_pretrained(model_type)
+    model = AutoModel.from_pretrained(model_type)
     model.eval()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
 
     # drop unused layers
-    if 'bert' in model_type:
+    if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
         model.encoder.layer =\
             torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-    elif 'xlnet' in model_type:
+    elif 'xlnet' == model_type[:5]:
         model.layer =\
             torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+    elif 'xlm' in model_type[:3]:
+        model.n_layers = num_layers
     else:
         raise ValueError("Not supported")
-    # elif 'xlm' in model_type:
-    #     model.n_layers = num_layers-1 # 0-index
     
 
     if no_idf:

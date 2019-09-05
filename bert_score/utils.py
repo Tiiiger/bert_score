@@ -7,13 +7,14 @@ from functools import partial
 from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
-from pytorch_transformers import BertConfig, XLNetConfig, XLMConfig
+from pytorch_transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
 
 __all__ = ['model_types']
 
 model_types = list(BertConfig.pretrained_config_archive_map.keys())+\
-              list(XLNetConfig.pretrained_config_archive_map.keys())
-              #list(XLMConfig.pretrained_config_archive_map.keys())
+              list(XLNetConfig.pretrained_config_archive_map.keys())+\
+              list(RobertaConfig.pretrained_config_archive_map.keys())+\
+              list(XLMConfig.pretrained_config_archive_map.keys())
 
 def padding(arr, pad_token, dtype=torch.long):
     lens = torch.LongTensor([len(a) for a in arr])
