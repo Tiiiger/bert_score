@@ -33,7 +33,7 @@ If you find this repo useful, please cite:
 
 ### Installation
 * Python version >= 3.6
-* PyTorch version >= 0.4.1
+* PyTorch version >= 1.0.0
 
 Install from pip by 
 
