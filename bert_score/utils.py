@@ -216,7 +216,9 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
     sentences = dedup_and_sort(refs+hyps)
     embs = []
     iter_range = range(0, len(sentences), batch_size)
-    if verbose: iter_range = tqdm(iter_range)
+    if verbose: 
+        print("computing bert embedding.")
+        iter_range = tqdm(iter_range)
     stats_dict = dict()
     for batch_start in iter_range:
         sen_batch = sentences[batch_start:batch_start+batch_size]
@@ -249,6 +251,9 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
 
     device = next(model.parameters()).device
     iter_range = range(0, len(refs), batch_size)
+    if verbose: 
+        print("computing greedy matching.")
+        iter_range = tqdm(iter_range)
     for batch_start in iter_range:
         batch_refs = refs[batch_start:batch_start+batch_size]
         batch_hyps = hyps[batch_start:batch_start+batch_size]

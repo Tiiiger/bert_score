@@ -14,7 +14,8 @@ from .utils import get_idf_dict, bert_cos_score_idf,\
 __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type="bert-base-multilingual-cased",
-          num_layers=8, verbose=False, no_idf=False, batch_size=64, nthreads=4):
+          num_layers=8, verbose=False, no_idf=False, 
+          batch_size=64, nthreads=4):
     """
     BERTScore metric.
 
