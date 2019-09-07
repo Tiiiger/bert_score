@@ -26,18 +26,20 @@ def padding(arr, pad_token, dtype=torch.long):
         mask[i, :lens[i]] = 1
     return padded, lens, mask
 
-def bert_encode(model, x, attention_mask):
+def bert_encode(model, x, attention_mask, all_layers=False):
     model.eval()
     x_seg = torch.zeros_like(x, dtype=torch.long)
     with torch.no_grad():
         out = model(x, attention_mask=attention_mask)
-    return out[0]
+    if all_layers:
+        emb = torch.stack(out[-1], dim=2)
+    else:
+        emb = out[0]
+    return emb
 
 
 def process(a, tokenizer=None):
     if not tokenizer is None:
-        # a = [tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token]
-        # a = tokenizer.convert_tokens_to_ids(a)
         a = tokenizer.encode(a, add_special_tokens=True)
     return set(a)
 
@@ -81,8 +83,6 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
         - :param: `pad` (str): the padding token.
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
-    # arr = [[tokenizer.cls_token]+tokenizer.tokenize(a)+[tokenizer.sep_token] for a in arr]
-    # arr = [tokenizer.convert_tokens_to_ids(a) for a in arr]
     arr = [tokenizer.encode(a, add_special_tokens=True) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
@@ -99,7 +99,8 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
 
 
 def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
-                       batch_size=-1, device='cuda:0'):
+                       batch_size=-1, device='cuda:0', 
+                       all_layers=False):
     """
     Compute BERT embedding in batches.
 
@@ -123,7 +124,8 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
     with torch.no_grad():
         for i in range(0, len(all_sens), batch_size):
             batch_embedding = bert_encode(model, padded_sens[i:i+batch_size],
-                                          attention_mask=mask[i:i+batch_size])
+                                          attention_mask=mask[i:i+batch_size],
+                                          all_layers=all_layers)
             embeddings.append(batch_embedding)
             del batch_embedding
 
@@ -133,7 +135,8 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict,
 
 
 def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
-                   hyp_embedding, hyp_masks, hyp_idf):
+                   hyp_embedding, hyp_masks, hyp_idf,
+                   all_layers=False):
     """
     Compute greedy matching based on cosine similarity.
 
@@ -158,12 +161,21 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
     ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
     hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
 
+    if all_layers:
+        B, _, L, D = hyp_embedding.size()
+        hyp_embedding = hyp_embedding.transpose(1, 2).transpose(0, 1)\
+            .contiguous().view(L*B, hyp_embedding.size(1), D)
+        ref_embedding = ref_embedding.transpose(1, 2).transpose(0, 1)\
+            .contiguous().view(L*B, ref_embedding.size(1), D)
     batch_size = ref_embedding.size(0)
-
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
     masks = torch.bmm(hyp_masks.unsqueeze(2).float(), ref_masks.unsqueeze(1).float())
-    masks = masks.expand(batch_size, masks.size(1), masks.size(2))\
-                              .contiguous().view_as(sim)
+    if all_layers:
+        masks = masks.unsqueeze(0).expand(L, -1, -1, -1)\
+                                  .contiguous().view_as(sim)
+    else:
+        masks = masks.expand(batch_size, -1, -1)\
+                                  .contiguous().view_as(sim)
 
     masks = masks.float().to(sim.device)
     sim = sim * masks
@@ -175,12 +187,22 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
     ref_idf.div_(ref_idf.sum(dim=1, keepdim=True))
     precision_scale = hyp_idf.to(word_precision.device)
     recall_scale = ref_idf.to(word_recall.device)
+    if all_layers:
+        precision_scale = precision_scale.unsqueeze(0)\
+            .expand(L, B, -1).contiguous().view_as(word_precision)
+        recall_scale = recall_scale.unsqueeze(0)\
+            .expand(L, B, -1).contiguous().view_as(word_recall)
     P = (word_precision * precision_scale).sum(dim=1)
     R = (word_recall * recall_scale).sum(dim=1)
     F = 2 * P * R / (P + R)
 
     hyp_zero_mask = hyp_masks.sum(dim=1).eq(2)
     ref_zero_mask = ref_masks.sum(dim=1).eq(2)
+
+    if all_layers:
+        P = P.view(L, B)
+        R = R.view(L, B)
+        F = F.view(L, B)
 
     if torch.any(hyp_zero_mask):
         print("Empty candidate sentence; Setting precision to be 0.")
@@ -195,7 +217,8 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
     return P, R, F
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
-                       verbose=False, batch_size=64, device='cuda:0'):
+                       verbose=False, batch_size=64, device='cuda:0',
+                       all_layers=False):
     """
     Compute BERTScore.
 
@@ -223,7 +246,7 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
     for batch_start in iter_range:
         sen_batch = sentences[batch_start:batch_start+batch_size]
         embs, masks, padded_idf = get_bert_embedding(sen_batch, model, tokenizer, idf_dict,
-                                                     device=device)
+                                                     device=device, all_layers=all_layers)
         embs = embs.cpu()
         masks = masks.cpu()
         padded_idf = padded_idf.cpu()
@@ -260,7 +283,7 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         ref_stats = pad_batch_stats(batch_refs, stats_dict, device)
         hyp_stats = pad_batch_stats(batch_hyps, stats_dict, device)
 
-        P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats)
-        preds.append(torch.stack((P, R, F1), dim=1).cpu())
-    preds = torch.cat(preds, dim=0)
+        P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats, all_layers)
+        preds.append(torch.stack((P, R, F1), dim=-1).cpu())
+    preds = torch.cat(preds, dim=1 if all_layers else 0)
     return preds
