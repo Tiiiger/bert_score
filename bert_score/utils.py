@@ -1,3 +1,4 @@
+import sys
 import torch
 from math import log
 from itertools import chain
@@ -205,11 +206,11 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
         F = F.view(L, B)
 
     if torch.any(hyp_zero_mask):
-        print("Empty candidate sentence; Setting precision to be 0.")
+        print("Warning: Empty candidate sentence; Setting precision to be 0.", file=sys.stderr)
         P = P.masked_fill(hyp_zero_mask, 0.)
 
     if torch.any(ref_zero_mask):
-        print("Empty candidate sentence; Setting recall to be 0.")
+        print("Warning: Empty candidate sentence; Setting recall to be 0.", file=sys.stderr)
         R = R.masked_fill(ref_zero_mask, 0.)
 
     F = F.masked_fill(torch.isnan(F), 0.)
