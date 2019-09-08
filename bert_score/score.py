@@ -59,8 +59,8 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
     if no_idf:
         idf_dict = defaultdict(lambda: 1.)
         # set idf for [SEP] and [CLS] to 0
-        idf_dict[101] = 0
-        idf_dict[102] = 0
+        idf_dict[tokenizer.sep_token_id] = 0
+        idf_dict[tokenizer.cls_token_id] = 0
     else:
         if verbose:
             print('preparing IDF dict...')
