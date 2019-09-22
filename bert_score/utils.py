@@ -41,7 +41,7 @@ def bert_encode(model, x, attention_mask, all_layers=False):
 
 def process(a, tokenizer=None):
     if not tokenizer is None:
-        a = tokenizer.encode(a, add_special_tokens=True)
+        a = tokenizer.encode(a.strip(), add_special_tokens=True)
     return set(a)
 
 
