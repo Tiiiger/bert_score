@@ -59,14 +59,14 @@ For the CLI, you can use it as follows:
 We provide example inputs under `./example`.
 
 ```sh
-bert-score -r example/refs.txt -c example/hyps.txt --bert bert-base-uncased 
+bert-score -r example/refs.txt -c example/hyps.txt -m roberta-large -l 17 
 ```
 2. To evaluate Chinese text files:
 
 Please format your input files similar to the ones in `./example`.
 
 ```sh
-bert-score -r [references] -c [candidates] --bert bert-base-chinese
+bert-score -r [references] -c [candidates] -m bert-base-chinese
 ```
 3. To evaluate text files in other languages:
 
