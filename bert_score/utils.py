@@ -8,7 +8,9 @@ from functools import partial
 from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
-from pytorch_transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
+from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
+
+from . import __version__
 
 __all__ = ['model_types']
 
@@ -16,6 +18,28 @@ model_types = list(BertConfig.pretrained_config_archive_map.keys())+\
               list(XLNetConfig.pretrained_config_archive_map.keys())+\
               list(RobertaConfig.pretrained_config_archive_map.keys())+\
               list(XLMConfig.pretrained_config_archive_map.keys())
+
+lang2model = defaultdict(lambda: 'bert-base-multilingual-cased')
+lang2model.update({
+    'en': 'roberta-large',
+    'zh': 'bert-base-chinese',
+})
+
+model2layers = {
+    'bert-base-multilingual-cased'  : 9,
+    'bert-base-uncased': 9,
+    'bert-large-uncased': 18,
+    'bert-base-cased-finetuned-mrpc': 9,
+    'bert-base-multilingual-cased': 9,
+    'bert-base-chinese': 8,
+    'roberta-base': 10,
+    'roberta-large': 17,
+    'roberta-large-mnli': 19,
+    'xlnet-base-cased': 5, 
+    'xlnet-large-cased': 7, 
+    'xlm-mlm-en-2048': 7, 
+    'xlm-mlm-100-1280': 11,
+}
 
 def padding(arr, pad_token, dtype=torch.long):
     lens = torch.LongTensor([len(a) for a in arr])
@@ -288,3 +312,9 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         preds.append(torch.stack((P, R, F1), dim=-1).cpu())
     preds = torch.cat(preds, dim=1 if all_layers else 0)
     return preds
+
+
+def get_hash(model, num_layers, idf):
+    msg = '{}_L{}{}_version={}'.format(
+        model, num_layers, '_idf' if idf else '_no-idf', __version__)
+    return msg

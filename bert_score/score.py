@@ -2,20 +2,23 @@ import os
 import time
 import argparse
 import torch
-from collections import defaultdict
-from pytorch_transformers import AutoModel, AutoTokenizer
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .utils import get_idf_dict, bert_cos_score_idf,\
-                   get_bert_embedding, model_types
+from collections import defaultdict
+from transformers import AutoModel, AutoTokenizer
+
+from .utils import (get_idf_dict, bert_cos_score_idf,
+                    get_bert_embedding, model_types,
+                    lang2model, model2layers, get_hash)
+
 
 __all__ = ['score', 'plot_example']
 
-def score(cands, refs, model_type="bert-base-multilingual-cased",
-          num_layers=8, verbose=False, no_idf=False, 
-          batch_size=64, nthreads=4, all_layers=False):
+def score(cands, refs, model_type=None, num_layers=None, verbose=False,
+          idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
+          return_hash=False):
     """
     BERTScore metric.
 
@@ -25,12 +28,24 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
         - :param: `bert` (str): bert specification
         - :param: `num_layers` (int): the layer of representation to use
         - :param: `verbose` (bool): turn on intermediate status update
-        - :param: `no_idf` (bool): do not use idf weighting
+        - :param: `idf` (bool): use idf weighting
         - :param: `batch_size` (int): bert score processing batch size
+        - :param: `lang` (str): language of the sentences
+        - :param: `return_hash` (bool): return hash code of the setting
     """
     assert len(cands) == len(refs)
-    assert model_type in model_types
 
+    assert lang is not None or model_type is not None, \
+        'Either lang or model_type should be specified'
+
+    if model_type is None:
+        lang = lang.lower()
+        model_type = lang2model[lang]
+    if num_layers is None:
+        num_layers = model2layers[model_type]
+
+
+    assert model_type in model_types
     tokenizer = AutoTokenizer.from_pretrained(model_type)
     model = AutoModel.from_pretrained(model_type)
     model.eval()
@@ -56,7 +71,7 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
             model.output_hidden_states = True
     
 
-    if no_idf:
+    if not idf:
         idf_dict = defaultdict(lambda: 1.)
         # set idf for [SEP] and [CLS] to 0
         idf_dict[tokenizer.sep_token_id] = 0
@@ -80,9 +95,13 @@ def score(cands, refs, model_type="bert-base-multilingual-cased",
     R = all_preds[..., 1].cpu()
     F1 = all_preds[..., 2].cpu()
     if verbose:
-        print('done in {:.2f} seconds'.format(time.perf_counter() - start))
+        time_diff = time.perf_counter() - start
+        print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
 
-    return P, R, F1
+    if return_hash:
+        return P, R, F1, get_hash(model_type, num_layers, idf)
+    else:
+        return P, R, F1
 
 # Under Construction
 def plot_example(h, r, verbose=False, bert="bert-base-multilingual-cased",
