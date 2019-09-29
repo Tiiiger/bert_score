@@ -54,6 +54,10 @@ git clone https://github.com/Tiiiger/bert_score
 cd bert_score
 pip install .
 ```
+and you may test your installation by:
+```
+python -m unittest discover
+```
 
 ### Usage
 
