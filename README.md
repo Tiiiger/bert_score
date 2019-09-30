@@ -1,6 +1,7 @@
 # BERTScore
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
 #### News:
+- Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
 - Updated to version 0.2.0
   - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
   - Automatically picking the best model for a given language
@@ -75,6 +76,8 @@ You will get the following output at the end:
 
 roberta-large_L17_no-idf_version=0.2.0 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
 
+where "roberta-large_L17_no-idf_version=0.2.0" is the hashcode.
+
 2. To evaluate text files in other languages:
 
 We currently support the 104 languages in multilingual BERT ([full list](https://github.com/google-research/bert/blob/master/multilingual.md#list-of-languages)).
@@ -94,6 +97,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 
 #### Practical Tips
 
+* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.0`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
 * Using inverse document frequency (idf) on the reference
   sentences to weigh word importance  may correlate better with human judgment.
   However, when the set of reference sentences become too small, the idf score 
