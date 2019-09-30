@@ -38,10 +38,9 @@ def main():
 
     assert len(cands) == len(refs)
 
-    all_preds = bert_score.score(cands, refs, model_type=args.model, num_layers=args.num_layers,
+    all_preds, hash_code = bert_score.score(cands, refs, model_type=args.model, num_layers=args.num_layers,
                                             verbose=args.verbose, idf=args.idf, batch_size=args.batch_size,
                                             lang=args.lang, return_hash=True)
-    all_preds, hash_code = all_preds[:3], all_preds[3]
     avg_scores = [s.mean(dim=0) for s in all_preds]
     P = avg_scores[0].cpu().item()
     R = avg_scores[1].cpu().item()

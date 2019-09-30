@@ -19,7 +19,7 @@ refs = [
 
 class TestScore(unittest.TestCase):
     def test_score(self):
-        P, R, F, hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
+        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
                                               idf=False, batch_size=3, return_hash=True)
         print(P.tolist(), R.tolist(), F.tolist())
 
@@ -30,7 +30,7 @@ class TestScore(unittest.TestCase):
         self.assertTrue((P - torch.tensor([0.9862896203994751, 0.9817618131637573, 0.9145744442939758])).abs_().max() < eps)
         self.assertTrue((R - torch.tensor([0.986611008644104, 0.9717907905578613, 0.9223880767822266])).abs_().max() < eps)
     def test_idf_score(self):
-        P, R, F, hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
+        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
                                               idf=True, batch_size=3, return_hash=True)
         print(P.tolist(), R.tolist(), F.tolist())
 

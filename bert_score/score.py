@@ -99,7 +99,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
 
     if return_hash:
-        return P, R, F1, get_hash(model_type, num_layers, idf)
+        return (P, R, F1), get_hash(model_type, num_layers, idf)
     else:
         return P, R, F1
 
