@@ -16,6 +16,29 @@ from .utils import (get_idf_dict, bert_cos_score_idf,
 
 __all__ = ['score', 'plot_example']
 
+def get_model(model_type, num_layers, all_layers):
+    model = AutoModel.from_pretrained(model_type)
+    model.eval()
+
+    # drop unused layers
+    if not all_layers:
+        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
+            model.encoder.layer =\
+                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+        elif 'xlnet' == model_type[:5]:
+            model.layer =\
+                torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+        elif 'xlm' in model_type[:3]:
+            model.n_layers = num_layers
+        else:
+            raise ValueError("Not supported")
+    else:
+        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
+            model.encoder.output_hidden_states = True
+        else:
+            model.output_hidden_states = True
+    return model
+
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
           idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
           return_hash=False):
@@ -47,29 +70,9 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
 
     assert model_type in model_types
     tokenizer = AutoTokenizer.from_pretrained(model_type)
-    model = AutoModel.from_pretrained(model_type)
-    model.eval()
+    model = get_model(model_type, num_layers, all_layers)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
-
-    # drop unused layers
-    if not all_layers:
-        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
-            model.encoder.layer =\
-                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-        elif 'xlnet' == model_type[:5]:
-            model.layer =\
-                torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
-        elif 'xlm' in model_type[:3]:
-            model.n_layers = num_layers
-        else:
-            raise ValueError("Not supported")
-    else:
-        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
-            model.encoder.output_hidden_states = True
-        else:
-            model.output_hidden_states = True
-    
 
     if not idf:
         idf_dict = defaultdict(lambda: 1.)
