@@ -16,7 +16,7 @@ from .utils import (get_idf_dict, bert_cos_score_idf,
 
 __all__ = ['score', 'plot_example']
 
-def get_model(model_type, num_layers, all_layers):
+def get_model(model_type, num_layers, all_layers=None):
     model = AutoModel.from_pretrained(model_type)
     model.eval()
 
@@ -107,82 +107,79 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         return P, R, F1
 
 # Under Construction
-def plot_example(h, r, verbose=False, bert="bert-base-multilingual-cased",
-                 num_layers=8, fname=''):
-    pass
-#     """
-#     BERTScore metric.
+def plot_example(h, r, model_type=None, lang=None, num_layers=None, fname=''):
+    """
+    BERTScore metric.
 
-#     Args:
-#         - :param: `h` (str): a candidate sentence
-#         - :param: `r` (str): a reference sentence
-#         - :param: `verbose` (bool): turn on intermediate status update
-#         - :param: `bert` (str): bert specification
-#         - :param: `num_layers` (int): the layer of representation to use
-#     """
-#     assert bert in bert_types
+    Args:
+        - :param: `h` (str): a candidate sentence
+        - :param: `r` (str): a reference sentence
+        - :param: `verbose` (bool): turn on intermediate status update
+        - :param: `bert` (str): bert specification
+        - :param: `num_layers` (int): the layer of representation to use
+    """
+    assert isinstance(h, str)
+    assert isinstance(r, str)
 
-#     if verbose:
-#         print('loading BERT model...')
-#     tokenizer = BertTokenizer.from_pretrained(bert)
-#     model = BertModel.from_pretrained(bert)
-#     model.eval()
-#     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-#     model.to(device)
+    assert lang is not None or model_type is not None, \
+        'Either lang or model_type should be specified'
 
-#     h_tokens = ['[CLS]'] + tokenizer.tokenize(h) + ['[SEP]']
-#     r_tokens = ['[CLS]'] + tokenizer.tokenize(r) + ['[SEP]']
+    if model_type is None:
+        lang = lang.lower()
+        model_type = lang2model[lang]
+    if num_layers is None:
+        num_layers = model2layers[model_type]
 
-#     model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-#     idf_dict = defaultdict(lambda: 1.)
+    assert model_type in model_types
+    tokenizer = AutoTokenizer.from_pretrained(model_type)
+    model = get_model(model_type, num_layers)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model.to(device)
+    
+    idf_dict = defaultdict(lambda: 1.)
+    # set idf for [SEP] and [CLS] to 0
+    idf_dict[tokenizer.sep_token_id] = 0
+    idf_dict[tokenizer.cls_token_id] = 0
 
-#     ref_embedding, ref_lens, ref_masks, padded_idf = get_bert_embedding([r], model, tokenizer, idf_dict,
-#                                        device=device)
-#     hyp_embedding, ref_lens, ref_masks, padded_idf = get_bert_embedding([h], model, tokenizer, idf_dict,
-#                                        device=device)
+    ref_embedding, ref_masks, padded_idf = get_bert_embedding([r], model, tokenizer, idf_dict,
+                                       device=device)
+    hyp_embedding, ref_masks, padded_idf = get_bert_embedding([h], model, tokenizer, idf_dict,
+                                       device=device)
 
-#     ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
-#     hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
+    ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
+    hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
+    sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2)).cpu()
+    sim = sim.squeeze(0).numpy()
 
-#     batch_size = ref_embedding.size(1)
+    # remove [CLS] and [SEP] tokens 
+    r_tokens = tokenizer.tokenize(r)
+    h_tokens = tokenizer.tokenize(h)
+    sim = sim[1:-1,1:-1]
 
-#     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2)).cpu()
-#     sim = sim.squeeze(0).numpy()
+    fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
+    im = ax.imshow(sim, cmap='Blues')
 
-#     # remove [CLS] and [SEP] tokens 
-#     r_tokens = r_tokens[1:-1]
-#     h_tokens = h_tokens[1:-1]
-#     sim = sim[1:-1,1:-1]
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(len(r_tokens)))
+    ax.set_yticks(np.arange(len(h_tokens)))
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(r_tokens, fontsize=10)
+    ax.set_yticklabels(h_tokens, fontsize=10)
+    plt.xlabel("Reference", fontsize=10)
+    plt.ylabel("Candidate", fontsize=10)
 
-#     fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
-#     im = ax.imshow(sim, cmap='Blues')
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
 
-#     # We want to show all ticks...
-#     ax.set_xticks(np.arange(len(r_tokens)))
-#     ax.set_yticks(np.arange(len(h_tokens)))
-#     # ... and label them with the respective list entries
-#     ax.set_xticklabels(r_tokens, fontsize=10)
-#     ax.set_yticklabels(h_tokens, fontsize=10)
-#     plt.xlabel("Refernce", fontsize=10)
-#     plt.ylabel("Candidate", fontsize=10)
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(h_tokens)):
+        for j in range(len(r_tokens)):
+            text = ax.text(j, i, '{:.3f}'.format(sim[i, j]),
+                           ha="center", va="center", color="k" if sim[i, j] < 0.6 else "w")
 
-#     # Rotate the tick labels and set their alignment.
-#     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-#              rotation_mode="anchor")
-
-#     # Loop over data dimensions and create text annotations.
-#     for i in range(len(h_tokens)):
-#         for j in range(len(r_tokens)):
-#             text = ax.text(j, i, '{:.3f}'.format(sim[i, j]),
-#                            ha="center", va="center", color="k" if sim[i, j] < 0.6 else "w")
-
-# #     P = sim.max(1).mean()
-# #     R = sim.max(0).mean()
-# #     F1 = 2 * P * R / (P + R)
-
-#     fig.tight_layout()
-# #     plt.title("BERT-F1: {:.3f}".format(F1), fontsize=10)
-#     if fname != "":
-#         print("Saved figure to file: ", fname+".png")
-#         plt.savefig(fname+'.png', dpi=100)
-#     plt.show()
+    fig.tight_layout()
+    if fname != "":
+        print("Saved figure to file: ", fname+".png")
+        plt.savefig(fname+'.png', dpi=100)
+    plt.show()
