@@ -22,8 +22,6 @@ def main():
     parser.add_argument('-f', '--file', type=str, default='visualize.png', help='name of file to save output matrix in')
 
     args = parser.parse_args()
-
-    print(args.ref)
  
     bert_score.plot_example(args.cand, args.ref, model_type=args.model, 
         lang=args.lang, num_layers=args.num_layers, fname=args.file)
