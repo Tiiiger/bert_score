@@ -1,10 +1,17 @@
 # BERTScore
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
+#### News:
+- Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
+- Updated to version 0.2.0
+  - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
+  - Automatically picking the best model for a given language
+  - Automatically picking the layer based a model
+  - IDF is *not* set as default as we show in the new version that the improvement brought by importance weighting is not consistent
 
 #### Authors:
 * [Tianyi Zhang](https://scholar.google.com/citations?user=OI0HSa0AAAAJ&hl=en)*
 * Varsha Kishore*
-* [Felix Wu](https://scholar.google.com.tw/citations?user=sNL8SSoAAAAJ&hl=en)*
+* [Felix Wu](https://sites.google.com/view/felixwu/home)*
 * [Kilian Q. Weinberger](http://kilian.cs.cornell.edu/index.html)
 * [Yoav Artzi](https://yoavartzi.com/)
 
@@ -33,7 +40,7 @@ If you find this repo useful, please cite:
 
 ### Installation
 * Python version >= 3.6
-* PyTorch version >= 0.4.1
+* PyTorch version >= 1.0.0
 
 Install from pip by 
 
@@ -45,54 +52,90 @@ Install it from the source by:
 ```sh
 git clone https://github.com/Tiiiger/bert_score
 cd bert_score
-pip install -r requiremnts.txt
 pip install .
+```
+and you may test your installation by:
+```
+python -m unittest discover
 ```
 
 ### Usage
 
-#### Metric
-We provide a command line interface(CLI) of BERTScore as well as a python module. 
+#### Command Line Interface (CLI)
+We provide a command line interface (CLI) of BERTScore as well as a python module. 
 For the CLI, you can use it as follows:
 1. To evaluate English text files:
 
 We provide example inputs under `./example`.
 
 ```sh
-bert-score -r example/refs.txt -c example/hyps.txt --bert bert-base-uncased 
+bert-score -r example/refs.txt -c example/hyps.txt --lang en
 ```
-2. To evaluate Chinese text files:
+You will get the following output at the end:
 
-Please format your input files similar to the ones in `./example`.
+roberta-large_L17_no-idf_version=0.2.0 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
 
-```sh
-bert-score -r [references] -c [candidates] --bert bert-base-chinese
-```
-3. To evaluate text files in other languages:
+where "roberta-large_L17_no-idf_version=0.2.0" is the hashcode.
 
-Please format your input files similar to the ones in `./example`.
+2. To evaluate text files in other languages:
 
-```sh
-bert-score -r [references] -c [candidates]
-```
+We currently support the 104 languages in multilingual BERT ([full list](https://github.com/google-research/bert/blob/master/multilingual.md#list-of-languages)).
+
+Please specify the two-letter abbrevation of the language. For instance, using `--lang zh` for Chinese text. 
+
 See more options by `bert-score -h`.
 
-For the python module, we provide a [demo](https://github.com/Tiiiger/bert_score/blob/master/example/Demo.ipynb). 
-Please refer to [`bert_score/score.py`](https://github.com/Tiiiger/bert_score/blob/master/bert_score/score.py) for more details.
+#### Python Function
+For the python module, we provide a [demo](./example/Demo.ipynb). 
+Please refer to [`bert_score/score.py`](./bert_score/score.py) for more details.
 
 Running BERTScore can be computationally intensive (because it uses BERT :p).
 Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
 can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
 
+
 #### Practical Tips
 
-* BERTScore relies on inverse document frequency (idf) on the reference
-  sentences to weigh word importance. However, when the set of reference
-  sentences become too small, the idf score would become inaccurate/invalid.
-  Please consider turning off idf scaling, by setting `no_idf=True` when calling
-  `bert_score.score` function.
+* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.0`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
+* Unlike BERT, RoBERTa uses GPT2-style tokenizer which creates addition " " tokens when there are multiple spaces appearing together. It is recommended to remove addition spaces by `sent = re.sub(r' +', ' ', sent)` or `sent = re.sub(r'\s+', ' ', sent)`.
+* Using inverse document frequency (idf) on the reference
+  sentences to weigh word importance  may correlate better with human judgment.
+  However, when the set of reference sentences become too small, the idf score 
+  would become inaccurate/invalid.
+  We now make it optional. To use idf,
+  please set `--idf` when using the CLI tool or
+  `idf=True` when calling `bert_score.score` function.
 * When you are low on GPU memory, consider setting `batch_size` when calling
   `bert_score.score` function.
+* To use a particular model please set `-m MODEL_TYPE` when using the CLI tool
+  or `model_type=MODEL_TYPE` when calling `bert_score.score` function. 
+* We tune layer to use based on WMT16 metric evaluation dataset. You may use a
+  different layer by setting `-l LAYER` or `num_layers=LAYER`
+
+### Default Behavior
+
+#### Default Model
+| Language  | Model                        |
+|:---------:|:----------------------------:|
+| en        | roberta-large                |
+| zh        | bert-base-chinese            |
+| others    | bert-base-multilingual-cased | 
+
+#### Default Layers
+| Model                           | Best Layer |
+|:-------------------------------:|------------|
+| bert-base-uncased               | 9          |
+| bert-large-uncased              | 18         |
+| bert-base-cased-finetuned-mrpc  | 9          |
+| bert-base-multilingual-cased    | 9          |
+| bert-base-chinese               | 8          |
+| roberta-base                    | 10         |
+| roberta-large                   | 17         |
+| roberta-large-mnli              | 19         |
+| xlnet-base-cased                | 5          | 
+| xlnet-large-cased               | 7          | 
+| xlm-mlm-en-2048                 | 7          | 
+| xlm-mlm-100-1280                | 11         |
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome

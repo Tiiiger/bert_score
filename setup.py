@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="bert_score",
-    version="0.1.2",
+    version='0.2.0',
     author="Tianyi Zhang*, Varsha Kishore*, Felix Wu*, Kilian Q. Weinberger, and Yoav Artzi",
     author_email="tzhang@asapp.com",
     description="PyTorch implementation of BERT score",
@@ -14,12 +14,13 @@ setup(
     url="https://github.com/Tiiiger/bert_score",
     packages=find_packages(exclude=["*.tests", "*.tests.*",
                                     "tests.*", "tests"]),
-    install_requires=['torch>=0.4.1',
+    install_requires=['torch>=1.0.0',
                       'numpy',
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
-                      'pytorch-pretrained-bert>=0.6.1'],
+                      'transformers>=2.0.0'
+                      ],
     entry_points={
         'console_scripts': [
             "bert-score=cli.score:main",

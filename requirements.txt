@@ -1,7 +1,7 @@
 # PyTorch
-torch>=0.4.1
+torch>=1.0.0
 # progress bars in model download and training scripts
 tqdm>=4.31.1
 # BERT
-pytorch-pretrained-bert>=0.6.1
+transformers>=2.0.0
 matplotlib
