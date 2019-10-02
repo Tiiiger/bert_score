@@ -151,8 +151,8 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     sim = sim.squeeze(0).cpu()
 
     # remove [CLS] and [SEP] tokens 
-    r_tokens = tokenizer.tokenize(reference)
-    h_tokens = tokenizer.tokenize(candidate)
+    r_tokens = [tokenizer.decode([i]) for i in tokenizer.encode(reference)]
+    h_tokens = [tokenizer.decode([i]) for i in tokenizer.encode(candidate)]
     sim = sim[1:-1,1:-1]
 
     fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
