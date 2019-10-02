@@ -139,4 +139,4 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome
-[bert](https://github.com/google-research/bert), [fairseq](https://github.com/pytorch/fairseq) and [transformers](https://github.com/huggingface/transformers).
+[bert](https://github.com/google-research/bert), [fairseq](https://github.com/pytorch/fairseq), and [transformers](https://github.com/huggingface/transformers).
