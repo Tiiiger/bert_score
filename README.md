@@ -26,7 +26,7 @@ Moreover, BERTScore computes precision, recall, and F1 measure, which can be
 useful for evaluating different language generation tasks.
 
 For an illustration, BERTScore precision can be computed as
-![](https://github.com/Tiiiger/bert_score/blob/master/bert_score.png "BERTScore")
+![](./bert_score.png "BERTScore")
 
 If you find this repo useful, please cite:
 ```
@@ -139,5 +139,4 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome
-[bert](https://github.com/google-research/bert) and
-[pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT).
+[bert](https://github.com/google-research/bert), [fairseq](https://github.com/pytorch/fairseq) and [transformers](https://github.com/huggingface/transformers).
