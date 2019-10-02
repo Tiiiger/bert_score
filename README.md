@@ -98,6 +98,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 #### Practical Tips
 
 * Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.0`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
+* Unlike BERT, RoBERTa uses GPT2-style tokenizer which creates addition " " tokens when there are multiple spaces appearing together. It is recommended to remove addition spaces by `sent = re.sub(r' +', ' ', sent)` or `sent = re.sub(r'\s+', ' ', sent)`.
 * Using inverse document frequency (idf) on the reference
   sentences to weigh word importance  may correlate better with human judgment.
   However, when the set of reference sentences become too small, the idf score 
