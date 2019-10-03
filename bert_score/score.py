@@ -180,6 +180,6 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
 
     fig.tight_layout()
     if fname != "":
-        print("Saved figure to file: ", fname+".png")
-        plt.savefig(fname+'.png', dpi=100)
+        print("Saved figure to file: ", fname)
+        plt.savefig(fname, dpi=100)
     plt.show()

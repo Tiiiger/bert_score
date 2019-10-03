@@ -11,7 +11,7 @@ import bert_score
 def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
 
-    parser = argparse.ArgumentParser('Calculate BERTScore')
+    parser = argparse.ArgumentParser('Visualize BERTScore')
     parser.add_argument('--lang', type=str, default='en', help='two-letter abbreviation of the language (e.g., en)')
     parser.add_argument('-m', '--model', default=None,
                         choices=bert_score.model_types, help='BERT model name (default: bert-base-uncased)')

@@ -27,7 +27,7 @@ setup(
             "bert-score-show=cli.visualize:main",
         ]
     },
-    # python_requires='>=3.5.0',
+    python_requires='>=3.6',
     tests_require=['pytest'],
     classifiers=[
         'Intended Audience :: Science/Research',

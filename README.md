@@ -85,6 +85,12 @@ Please specify the two-letter abbrevation of the language. For instance, using `
 
 See more options by `bert-score -h`.
 
+3. To visualize matching scores:
+```sh
+bert-score-show --lang en -r "There are two bananas on the table." -c "On the table are two apples." -f out.png
+```
+The figure will be saved to out.png.
+
 #### Python Function
 For the python module, we provide a [demo](./example/Demo.ipynb). 
 Please refer to [`bert_score/score.py`](./bert_score/score.py) for more details.
