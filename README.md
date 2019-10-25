@@ -117,6 +117,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
   or `model_type=MODEL_TYPE` when calling `bert_score.score` function. 
 * We tune layer to use based on WMT16 metric evaluation dataset. You may use a
   different layer by setting `-l LAYER` or `num_layers=LAYER`
+* __Limitation__: Because BERT, RoBERTa, and XLM with learned positional embeddings are pre-trained on sentences with max length 512, BERTScore is undefined between sentences longer than 510 (512 after adding \[CLS\] and \[SEP\] tokens).  Please consider using XLNet which can support much longer inputs.
 
 ### Default Behavior
 
@@ -128,20 +129,20 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | others    | bert-base-multilingual-cased | 
 
 #### Default Layers
-| Model                           | Best Layer |
-|:-------------------------------:|------------|
-| bert-base-uncased               | 9          |
-| bert-large-uncased              | 18         |
-| bert-base-cased-finetuned-mrpc  | 9          |
-| bert-base-multilingual-cased    | 9          |
-| bert-base-chinese               | 8          |
-| roberta-base                    | 10         |
-| roberta-large                   | 17         |
-| roberta-large-mnli              | 19         |
-| xlnet-base-cased                | 5          | 
-| xlnet-large-cased               | 7          | 
-| xlm-mlm-en-2048                 | 7          | 
-| xlm-mlm-100-1280                | 11         |
+| Model                           | Best Layer | Max Length    |
+|:-------------------------------:|------------| ------------- |
+| bert-base-uncased               | 9          | 512           |
+| bert-large-uncased              | 18         | 512           |
+| bert-base-cased-finetuned-mrpc  | 9          | 512           |
+| bert-base-multilingual-cased    | 9          | 512           |
+| bert-base-chinese               | 8          | 512           |
+| roberta-base                    | 10         | 512           |
+| roberta-large                   | 17         | 512           |
+| roberta-large-mnli              | 19         | 512           |
+| xlnet-base-cased                | 5          | 1000000000000 |
+| xlnet-large-cased               | 7          | 1000000000000 |
+| xlm-mlm-en-2048                 | 7          | 512           |
+| xlm-mlm-100-1280                | 11         | 512           |
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome
