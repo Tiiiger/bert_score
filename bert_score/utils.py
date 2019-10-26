@@ -335,30 +335,39 @@ def get_hash(model, num_layers, idf):
     return msg
 
 
-def cache_scibert(model_type):
+def cache_scibert(model_type, cache_folder='~/.cache/torch/transformers'):
     if not model_type.startswith('scibert'):
         return model_type
 
     underscore_model_type = model_type.replace('-', '_')
-    filename = f'/tmp/{underscore_model_type}'
+    cache_folder = os.path.abspath(cache_folder)
+    filename = os.path.join(cache_folder, underscore_model_type)
 
     # download SciBERT models
-    if not os.path.isdir(filename):
-        cmd = f'cd /tmp ; wget {SCIBERT_URL_DICT[model_type]}; tar -xvf {underscore_model_type}.tar;'
+    if not os.path.exists(filename):
+        cmd = f'mkdir -p {cache_folder}; cd {cache_folder};'
+        cmd += f'wget {SCIBERT_URL_DICT[model_type]}; tar -xvf {underscore_model_type}.tar;'
         cmd += f'rm -f {underscore_model_type}.tar ; cd {underscore_model_type}; tar -zxvf weights.tar.gz; mv weights/* .;'
-        cmd += f'rm -f weights.tar.gz; rmdir weights; mv bert_config.json config.json'
+        cmd += f'rm -f weights.tar.gz; rmdir weights; mv bert_config.json config.json;'
+        print(cmd)
         print(f'downloading {model_type} model')
         os.system(cmd)
 
     # fix the missing files in scibert
-    with open(os.path.join(filename, 'special_tokens_map.json'), 'w') as f:
-        print('{"unk_token": "[UNK]", "sep_token": "[SEP]", "pad_token": "[PAD]", "cls_token": "[CLS]", "mask_token": "[MASK]"}', file=f)
+    json_file = os.path.join(filename, 'special_tokens_map.json')
+    if not os.path.exists(json_file):
+        with open(json_file, 'w') as f:
+            print('{"unk_token": "[UNK]", "sep_token": "[SEP]", "pad_token": "[PAD]", "cls_token": "[CLS]", "mask_token": "[MASK]"}', file=f)
 
-    with open(os.path.join(filename, 'added_tokens.json'), 'w') as f:
-        print('{}', file=f)
+    json_file = os.path.join(filename, 'added_tokens.json')
+    if not os.path.exists(json_file):
+        with open(json_file, 'w') as f:
+            print('{}', file=f)
 
     if 'uncased' in model_type: 
-        with open(os.path.join(filename, 'tokenizer_config.json'), 'w') as f:
-            print('{"do_lower_case": true, "max_len": 512, "init_inputs": []}', file=f)
+        json_file = os.path.join(filename, 'tokenizer_config.json')
+        if not os.path.exists(json_file):
+            with open(json_file, 'w') as f:
+                print('{"do_lower_case": true, "max_len": 512, "init_inputs": []}', file=f)
 
     return filename
