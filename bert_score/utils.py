@@ -1,4 +1,6 @@
 import sys
+import os
+import json
 import torch
 from math import log
 from itertools import chain
@@ -14,15 +16,24 @@ from . import __version__
 
 __all__ = ['model_types']
 
-model_types = list(BertConfig.pretrained_config_archive_map.keys())+\
-              list(XLNetConfig.pretrained_config_archive_map.keys())+\
-              list(RobertaConfig.pretrained_config_archive_map.keys())+\
-              list(XLMConfig.pretrained_config_archive_map.keys())
+SCIBERT_URL_DICT = {
+    'scibert-scivocab-uncased': 'https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_scivocab_uncased.tar', # recommend by the SciBERT authors
+    'scibert-scivocab-cased': 'https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_scivocab_cased.tar',
+    'scibert-basevocab-uncased': 'https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_basevocab_uncased.tar',
+    'scibert-basevocab-cased':  'https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_basevocab_cased.tar',
+}
+
+model_types = list(BertConfig.pretrained_config_archive_map.keys()) + \
+              list(XLNetConfig.pretrained_config_archive_map.keys()) + \
+              list(RobertaConfig.pretrained_config_archive_map.keys()) + \
+              list(XLMConfig.pretrained_config_archive_map.keys()) + \
+              list(SCIBERT_URL_DICT.keys())
 
 lang2model = defaultdict(lambda: 'bert-base-multilingual-cased')
 lang2model.update({
     'en': 'roberta-large',
     'zh': 'bert-base-chinese',
+    'en-sci': 'scibert-scivocab-uncased',
 })
 
 model2layers = {
@@ -39,6 +50,10 @@ model2layers = {
     'xlnet-large-cased': 7, 
     'xlm-mlm-en-2048': 7, 
     'xlm-mlm-100-1280': 11,
+    'scibert-scivocab-uncased': 9,
+    'scibert-scivocab-cased': 9,
+    'scibert-basevocab-uncased': 9,
+    'scibert-basevocab-cased':  9,
 }
 
 def padding(arr, pad_token, dtype=torch.long):
@@ -318,3 +333,32 @@ def get_hash(model, num_layers, idf):
     msg = '{}_L{}{}_version={}'.format(
         model, num_layers, '_idf' if idf else '_no-idf', __version__)
     return msg
+
+
+def cache_scibert(model_type):
+    if not model_type.startswith('scibert'):
+        return model_type
+
+    underscore_model_type = model_type.replace('-', '_')
+    filename = f'/tmp/{underscore_model_type}'
+
+    # download SciBERT models
+    if not os.path.isdir(filename):
+        cmd = f'cd /tmp ; wget {SCIBERT_URL_DICT[model_type]}; tar -xvf {underscore_model_type}.tar;'
+        cmd += f'rm -f {underscore_model_type}.tar ; cd {underscore_model_type}; tar -zxvf weights.tar.gz; mv weights/* .;'
+        cmd += f'rm -f weights.tar.gz; rmdir weights; mv bert_config.json config.json'
+        print(f'downloading {model_type} model')
+        os.system(cmd)
+
+    # fix the missing files in scibert
+    with open(os.path.join(filename, 'special_tokens_map.json'), 'w') as f:
+        print('{"unk_token": "[UNK]", "sep_token": "[SEP]", "pad_token": "[PAD]", "cls_token": "[CLS]", "mask_token": "[MASK]"}', file=f)
+
+    with open(os.path.join(filename, 'added_tokens.json'), 'w') as f:
+        print('{}', file=f)
+
+    if 'uncased' in model_type: 
+        with open(os.path.join(filename, 'tokenizer_config.json'), 'w') as f:
+            print('{"do_lower_case": true, "max_len": 512, "init_inputs": []}', file=f)
+
+    return filename

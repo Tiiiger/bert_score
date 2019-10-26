@@ -1,6 +1,8 @@
 # BERTScore
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
 #### News:
+- Updated to version 0.2.1
+  - [SciBERT](https://github.com/allenai/scibert) (Beltagy et al.) models are now included. Thanks to AI2 for sharing the models. By default, we use the 9th layer (the same as BERT-base), but this is not tuned. 
 - Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
 - Updated to version 0.2.0
   - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
@@ -73,9 +75,9 @@ bert-score -r example/refs.txt -c example/hyps.txt --lang en
 ```
 You will get the following output at the end:
 
-roberta-large_L17_no-idf_version=0.2.0 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
+roberta-large_L17_no-idf_version=0.2.1 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
 
-where "roberta-large_L17_no-idf_version=0.2.0" is the hashcode.
+where "roberta-large_L17_no-idf_version=0.2.1" is the hashcode.
 
 2. To evaluate text files in other languages:
 
@@ -102,7 +104,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 
 #### Practical Tips
 
-* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.0`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
+* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.1`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
 * Unlike BERT, RoBERTa uses GPT2-style tokenizer which creates addition " " tokens when there are multiple spaces appearing together. It is recommended to remove addition spaces by `sent = re.sub(r' +', ' ', sent)` or `sent = re.sub(r'\s+', ' ', sent)`.
 * Using inverse document frequency (idf) on the reference
   sentences to weigh word importance  may correlate better with human judgment.
@@ -125,8 +127,9 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | Language  | Model                        |
 |:---------:|:----------------------------:|
 | en        | roberta-large                |
+| en-sci    | scibert-scivocab-uncased     |
 | zh        | bert-base-chinese            |
-| others    | bert-base-multilingual-cased | 
+| others    | bert-base-multilingual-cased |
 
 #### Default Layers
 | Model                           | Best Layer | Max Length    |
@@ -143,6 +146,12 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | xlnet-large-cased               | 7          | 1000000000000 |
 | xlm-mlm-en-2048                 | 7          | 512           |
 | xlm-mlm-100-1280                | 11         | 512           |
+| scibert-scivocab-uncased        | 9*         | 512           |
+| scibert-scivocab-cased          | 9*         | 512           |
+| scibert-basevocab-uncased       | 9*         | 512           |
+| scibert-basevocab-cased         | 9*         | 512           |
+
+*: Not tuned
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome

@@ -11,24 +11,28 @@ from transformers import AutoModel, AutoTokenizer
 
 from .utils import (get_idf_dict, bert_cos_score_idf,
                     get_bert_embedding, model_types,
-                    lang2model, model2layers, get_hash)
+                    lang2model, model2layers, get_hash,
+                    cache_scibert)
 
 
 __all__ = ['score', 'plot_example']
 
 def get_model(model_type, num_layers, all_layers=None):
-    model = AutoModel.from_pretrained(model_type)
+    if model_type.startswith('scibert'):
+        model = AutoModel.from_pretrained(cache_scibert(model_type))
+    else:
+        model = AutoModel.from_pretrained(model_type)
     model.eval()
 
     # drop unused layers
     if not all_layers:
-        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
+        if model_type.startswith('bert') or model_type.startswith('roberta') or model_type.startswith('scibert'):
             model.encoder.layer =\
                 torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-        elif 'xlnet' == model_type[:5]:
+        elif model_type.startswith('xlnet'):
             model.layer =\
                 torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
-        elif 'xlm' in model_type[:3]:
+        elif model_type.startswith('xlm'):
             model.n_layers = num_layers
         else:
             raise ValueError("Not supported")
@@ -69,7 +73,10 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
 
 
     assert model_type in model_types
-    tokenizer = AutoTokenizer.from_pretrained(model_type)
+    if model_type.startswith('scibert'):
+        tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_type)
     model = get_model(model_type, num_layers, all_layers)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
@@ -131,7 +138,10 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
         num_layers = model2layers[model_type]
 
     assert model_type in model_types
-    tokenizer = AutoTokenizer.from_pretrained(model_type)
+    if model_type.startswith('scibert'):
+        tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_type)
     model = get_model(model_type, num_layers)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
