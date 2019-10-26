@@ -6,5 +6,5 @@ with open("hyps.txt") as f:
 with open("refs.txt") as f:
     refs = [line.strip() for line in f]
 
-P, R, F = score(cands, refs, lang='en')
-print(f'P={P:.6f} R={R:.6f} F={F:.6f}')
+(P, R, F), hashname = score(cands, refs, lang='en', return_hash=True)
+print(f'{hashname}: P={P.mean().item():.6f} R={R.mean().item():.6f} F={F.mean().item():.6f}')
