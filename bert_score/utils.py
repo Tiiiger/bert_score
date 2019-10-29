@@ -11,6 +11,7 @@ from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
 from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
+from transformers import AutoModel
 
 from . import __version__
 
@@ -55,6 +56,32 @@ model2layers = {
     'scibert-basevocab-uncased': 9,
     'scibert-basevocab-cased':  9,
 }
+
+def get_model(model_type, num_layers, all_layers=None):
+    if model_type.startswith('scibert'):
+        model = AutoModel.from_pretrained(cache_scibert(model_type))
+    else:
+        model = AutoModel.from_pretrained(model_type)
+    model.eval()
+
+    # drop unused layers
+    if not all_layers:
+        if model_type.startswith('bert') or model_type.startswith('roberta') or model_type.startswith('scibert'):
+            model.encoder.layer =\
+                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+        elif model_type.startswith('xlnet'):
+            model.layer =\
+                torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+        elif model_type.startswith('xlm'):
+            model.n_layers = num_layers
+        else:
+            raise ValueError("Not supported")
+    else:
+        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
+            model.encoder.output_hidden_states = True
+        else:
+            model.output_hidden_states = True
+    return model
 
 def padding(arr, pad_token, dtype=torch.long):
     lens = torch.LongTensor([len(a) for a in arr])

@@ -9,39 +9,13 @@ import numpy as np
 from collections import defaultdict
 from transformers import AutoModel, AutoTokenizer
 
-from .utils import (get_idf_dict, bert_cos_score_idf,
+from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
                     get_bert_embedding, model_types,
                     lang2model, model2layers, get_hash,
                     cache_scibert)
 
 
 __all__ = ['score', 'plot_example']
-
-def get_model(model_type, num_layers, all_layers=None):
-    if model_type.startswith('scibert'):
-        model = AutoModel.from_pretrained(cache_scibert(model_type))
-    else:
-        model = AutoModel.from_pretrained(model_type)
-    model.eval()
-
-    # drop unused layers
-    if not all_layers:
-        if model_type.startswith('bert') or model_type.startswith('roberta') or model_type.startswith('scibert'):
-            model.encoder.layer =\
-                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-        elif model_type.startswith('xlnet'):
-            model.layer =\
-                torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
-        elif model_type.startswith('xlm'):
-            model.n_layers = num_layers
-        else:
-            raise ValueError("Not supported")
-    else:
-        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
-            model.encoder.output_hidden_states = True
-        else:
-            model.output_hidden_states = True
-    return model
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
           idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
@@ -52,13 +26,21 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     Args:
         - :param: `cands` (list of str): candidate sentences
         - :param: `refs` (list of str): reference sentences
-        - :param: `bert` (str): bert specification
-        - :param: `num_layers` (int): the layer of representation to use
+        - :param: `model_type` (str): bert specification, default using the suggested
+                  model for the target langauge; has to specify at least one of
+                  `model_type` or `lang`
+        - :param: `num_layers` (int): the layer of representation to use.
+                  default using the number of layer tuned on WMT16 correlation data
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `idf` (bool): use idf weighting
         - :param: `batch_size` (int): bert score processing batch size
-        - :param: `lang` (str): language of the sentences
+        - :param: `lang` (str): language of the sentences; has to specify 
+                  at least one of `model_type` or `lang`
         - :param: `return_hash` (bool): return hash code of the setting
+
+    Return:
+        - :param: `(P, R, F)`: each is of shape (N); N = number of input
+                  candidate reference pairs
     """
     assert len(cands) == len(refs)
 
@@ -119,11 +101,16 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     BERTScore metric.
 
     Args:
-        - :param: `h` (str): a candidate sentence
-        - :param: `r` (str): a reference sentence
+        - :param: `candidate` (str): a candidate sentence
+        - :param: `reference` (str): a reference sentence
         - :param: `verbose` (bool): turn on intermediate status update
-        - :param: `bert` (str): bert specification
+        - :param: `model_type` (str): bert specification, default using the suggested
+                  model for the target langauge; has to specify at least one of
+                  `model_type` or `lang`
+        - :param: `lang` (str): language of the sentences; has to specify 
+                  at least one of `model_type` or `lang`
         - :param: `num_layers` (int): the layer of representation to use
+        - :param: `fname` (str): path to save the output plot
     """
     assert isinstance(candidate, str)
     assert isinstance(reference, str)
