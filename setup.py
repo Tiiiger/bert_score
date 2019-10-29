@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="bert_score",
-    version='0.2.0',
+    version='0.2.1',
     author="Tianyi Zhang*, Varsha Kishore*, Felix Wu*, Kilian Q. Weinberger, and Yoav Artzi",
     author_email="tzhang@asapp.com",
     description="PyTorch implementation of BERT score",
