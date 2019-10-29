@@ -123,7 +123,7 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
         - :param: `pad` (str): the padding token.
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
-    arr = [tokenizer.encode(a, add_special_tokens=True) for a in arr]
+    arr = [tokenizer.encode(a, add_special_tokens=True, max_length=tokenizer.max_len) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
 
