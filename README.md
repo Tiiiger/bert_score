@@ -119,7 +119,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
   or `model_type=MODEL_TYPE` when calling `bert_score.score` function. 
 * We tune layer to use based on WMT16 metric evaluation dataset. You may use a
   different layer by setting `-l LAYER` or `num_layers=LAYER`
-* __Limitation__: Because BERT, RoBERTa, and XLM with learned positional embeddings are pre-trained on sentences with max length 512, BERTScore is undefined between sentences longer than 510 (512 after adding \[CLS\] and \[SEP\] tokens).  Please consider using XLNet which can support much longer inputs.
+* __Limitation__: Because BERT, RoBERTa, and XLM with learned positional embeddings are pre-trained on sentences with max length 512, BERTScore is undefined between sentences longer than 510 (512 after adding \[CLS\] and \[SEP\] tokens). The sentences longer than this will be truncated. Please consider using XLNet which can support much longer inputs.
 
 ### Default Behavior
 
