@@ -18,8 +18,8 @@ from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
 __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
-          idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False):
+          idf=False, idf_dict=None, batch_size=64, nthreads=4, all_layers=False, lang=None,
+          return_hash=False, norm_dim=()):
     """
     BERTScore metric.
 
@@ -64,24 +64,30 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     model.to(device)
 
     if not idf:
+        if verbose:
+            print("not using IDF weighting")
         idf_dict = defaultdict(lambda: 1.)
         # set idf for [SEP] and [CLS] to 0
         idf_dict[tokenizer.sep_token_id] = 0
         idf_dict[tokenizer.cls_token_id] = 0
     else:
-        if verbose:
-            print('preparing IDF dict...')
-        start = time.perf_counter()
-        idf_dict = get_idf_dict(refs, tokenizer, nthreads=nthreads)
-        if verbose:
-            print('done in {:.2f} seconds'.format(time.perf_counter() - start))
+        if idf_dict is None:
+            if verbose:
+                print('preparing IDF dict...')
+            start = time.perf_counter()
+            idf_dict = get_idf_dict(refs, tokenizer, nthreads=nthreads)
+            if verbose:
+                print('done in {:.2f} seconds'.format(time.perf_counter() - start))
+        else: 
+            print('use given IDF values.')
 
     if verbose:
         print('calculating scores...')
     start = time.perf_counter()
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
                                    verbose=verbose, device=device, 
-                                   batch_size=batch_size, all_layers=all_layers)
+                                   batch_size=batch_size, all_layers=all_layers,
+                                   norm_dim=norm_dim)
 
     P = all_preds[..., 0].cpu()
     R = all_preds[..., 1].cpu()

@@ -285,7 +285,7 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
                        verbose=False, batch_size=64, device='cuda:0',
-                       all_layers=False):
+                       all_layers=False, norm_dim=()):
     """
     Compute BERTScore.
 
@@ -320,6 +320,10 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         for i, sen in enumerate(sen_batch):
             sequence_len = masks[i].sum().item()
             emb = embs[i, :sequence_len]
+            if len(norm_dim) != 0:
+                mean = emb.mean(dim=norm_dim, keepdim=True)
+                std = torch.sqrt(emb.var(dim=norm_dim, keepdim=True)+1e-6)
+                emb = (emb-mean)/std
             idf = padded_idf[i, :sequence_len]
             stats_dict[sen] = (emb, idf)
         
