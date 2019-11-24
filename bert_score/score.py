@@ -19,7 +19,8 @@ __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
           idf=False, idf_dict=None, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False, norm_dim=()):
+          return_hash=False, subtract_layer_norm=False, 
+          subtract_svd=False, norm_dim=()):
     """
     BERTScore metric.
 
@@ -87,6 +88,8 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
                                    verbose=verbose, device=device, 
                                    batch_size=batch_size, all_layers=all_layers,
+                                   subtract_layer_norm=subtract_layer_norm,
+                                   subtract_svd=subtract_svd,
                                    norm_dim=norm_dim)
 
     P = all_preds[..., 0].cpu()

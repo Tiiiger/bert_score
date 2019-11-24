@@ -99,7 +99,7 @@ def bert_encode(model, x, attention_mask, all_layers=False):
     with torch.no_grad():
         out = model(x, attention_mask=attention_mask)
     if all_layers:
-        emb = torch.stack(out[-1], dim=2)
+        emb = torch.stack(out[2], dim=2)
     else:
         emb = out[0]
     return emb
@@ -285,6 +285,8 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf,
 
 def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
                        verbose=False, batch_size=64, device='cuda:0',
+                       subtract_layer_norm=False,
+                       subtract_svd=False,
                        all_layers=False, norm_dim=()):
     """
     Compute BERTScore.
@@ -314,17 +316,31 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
         sen_batch = sentences[batch_start:batch_start+batch_size]
         embs, masks, padded_idf = get_bert_embedding(sen_batch, model, tokenizer, idf_dict,
                                                      device=device, all_layers=all_layers)
-        embs = embs.cpu()
-        masks = masks.cpu()
         padded_idf = padded_idf.cpu()
         for i, sen in enumerate(sen_batch):
             sequence_len = masks[i].sum().item()
             emb = embs[i, :sequence_len]
+            if subtract_svd:
+                u, s, v = emb.transpose(0,1).svd()
+                first_component_coeff = (u[..., :1] * s[..., :1].unsqueeze(1))
+                first_component = torch.bmm(first_component_coeff,
+                                            v[..., 0].unsqueeze(1))
+                emb = emb - first_component.transpose(0, 1)
+
+            if subtract_layer_norm:
+                if all_layers:
+                    bias = [l.output.LayerNorm.bias for l in model.encoder.layer]
+                    bias = torch.stack(bias, dim=0).unsqueeze(0)
+                    emb[:, 1:] = emb[:, 1:]-bias.cpu()
+                else:
+                    bias = model.encoder.layer[-1].output.LayerNorm.bias
             if len(norm_dim) != 0:
                 mean = emb.mean(dim=norm_dim, keepdim=True)
                 std = torch.sqrt(emb.var(dim=norm_dim, keepdim=True)+1e-6)
                 emb = (emb-mean)/std
             idf = padded_idf[i, :sequence_len]
+            embs = embs.cpu()
+            idf = idf.cpu()
             stats_dict[sen] = (emb, idf)
         
     def pad_batch_stats(sen_batch, stats_dict, device):
