@@ -1,5 +1,5 @@
 # BERTScore
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python) [![Downloads](https://pepy.tech/badge/bert-score)](https://pepy.tech/project/bert-score) [![Downloads](https://pepy.tech/badge/bert-score/month)](https://pepy.tech/project/bert-score/month)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python) [![Downloads](https://pepy.tech/badge/bert-score)](https://pepy.tech/project/bert-score) [![Downloads](https://pepy.tech/badge/bert-score/month)](https://pepy.tech/project/bert-score/month) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
 #### News:
@@ -152,6 +152,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | scibert-scivocab-cased          | 9*         | 512           |
 | scibert-basevocab-uncased       | 9*         | 512           |
 | scibert-basevocab-cased         | 9*         | 512           |
+| distilroberta-base              | 5          | 512           |
 
 *: Not tuned
 
