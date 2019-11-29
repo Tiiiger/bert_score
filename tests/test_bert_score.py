@@ -2,8 +2,6 @@ import unittest
 import torch
 import bert_score
 
-from collections import defaultdict
-
 eps = 1e-6
 
 cands = [
@@ -27,8 +25,10 @@ class TestScore(unittest.TestCase):
         self.assertTrue(torch.is_tensor(R))
         self.assertTrue(torch.is_tensor(F))
         self.assertEqual(hash_code, f'roberta-large_L17_no-idf_version={bert_score.__version__}')
-        self.assertTrue((P - torch.tensor([0.9862896203994751, 0.9817618131637573, 0.9145744442939758])).abs_().max() < eps)
-        self.assertTrue((R - torch.tensor([0.986611008644104, 0.9717907905578613, 0.9223880767822266])).abs_().max() < eps)
+        self.assertTrue((P - torch.tensor([0.9843302369117737, 0.9832239747047424, 0.9120386242866516])).abs_().max() < eps)
+        self.assertTrue((R - torch.tensor([0.9823839068412781, 0.9732863903045654, 0.920428991317749])).abs_().max() < eps)
+        self.assertTrue((F - torch.tensor([0.9833561182022095, 0.9782299995422363, 0.916214644908905])).abs_().max() < eps)
+
     def test_idf_score(self):
         (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
                                               idf=True, batch_size=3, return_hash=True)
@@ -38,9 +38,9 @@ class TestScore(unittest.TestCase):
         self.assertTrue(torch.is_tensor(R))
         self.assertTrue(torch.is_tensor(F))
         self.assertEqual(hash_code, f'roberta-large_L17_idf_version={bert_score.__version__}')
-        self.assertTrue((P - torch.tensor([0.9841673374176025, 0.9752232432365417, 0.8989502787590027])).abs_().max() < eps)
-        self.assertTrue((R - torch.tensor([0.9843330979347229, 0.9698787927627563, 0.9181708097457886])).abs_().max() < eps)
-        self.assertTrue((F - torch.tensor([0.9842502474784851, 0.9725437164306641, 0.908458948135376])).abs_().max() < eps)
+        self.assertTrue((P - torch.tensor([0.9837872385978699, 0.9754738807678223, 0.8947395086288452])).abs_().max() < eps)
+        self.assertTrue((R - torch.tensor([0.9827190637588501, 0.9697767496109009, 0.9172918796539307])).abs_().max() < eps)
+        self.assertTrue((F - torch.tensor([0.9832529425621033, 0.972616970539093, 0.9058753848075867])).abs_().max() < eps)
 
 if __name__ == '__main__':
     unittest.main()

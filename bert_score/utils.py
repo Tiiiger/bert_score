@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import torch
 from math import log
 from itertools import chain
@@ -11,7 +10,7 @@ from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
 
 from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
-from transformers import AutoModel
+from transformers import AutoModel, GPT2Tokenizer
 
 from . import __version__
 
@@ -37,6 +36,7 @@ lang2model.update({
     'en-sci': 'scibert-scivocab-uncased',
 })
 
+
 model2layers = {
     'bert-base-multilingual-cased'  : 9,
     'bert-base-uncased': 9,
@@ -55,7 +55,21 @@ model2layers = {
     'scibert-scivocab-cased': 9,
     'scibert-basevocab-uncased': 9,
     'scibert-basevocab-cased':  9,
+    'distilroberta-base': 5,
 }
+
+
+def sent_encode(tokenizer, sent):
+    "Encoding as sentence based on the tokenizer"
+    if isinstance(tokenizer, GPT2Tokenizer):
+        # for RoBERTa and GPT-2
+        return tokenizer.encode(sent.strip(), add_special_tokens=True,
+                                add_prefix_space=True,
+                                max_length=tokenizer.max_len)
+    else:
+        return tokenizer.encode(sent.strip(), add_special_tokens=True,
+                                max_length=tokenizer.max_len)
+
 
 def get_model(model_type, num_layers, all_layers=None):
     if model_type.startswith('scibert'):
@@ -65,6 +79,7 @@ def get_model(model_type, num_layers, all_layers=None):
     model.eval()
 
     # drop unused layers
+    # TODO: detect by the model class instead of string name
     if not all_layers:
         if model_type.startswith('bert') or model_type.startswith('roberta') or model_type.startswith('scibert'):
             model.encoder.layer =\
@@ -83,6 +98,7 @@ def get_model(model_type, num_layers, all_layers=None):
             model.output_hidden_states = True
     return model
 
+
 def padding(arr, pad_token, dtype=torch.long):
     lens = torch.LongTensor([len(a) for a in arr])
     max_len = lens.max().item()
@@ -92,6 +108,7 @@ def padding(arr, pad_token, dtype=torch.long):
         padded[i, :lens[i]] = torch.tensor(a, dtype=dtype)
         mask[i, :lens[i]] = 1
     return padded, lens, mask
+
 
 def bert_encode(model, x, attention_mask, all_layers=False):
     model.eval()
@@ -106,8 +123,8 @@ def bert_encode(model, x, attention_mask, all_layers=False):
 
 
 def process(a, tokenizer=None):
-    if not tokenizer is None:
-        a = tokenizer.encode(a.strip(), add_special_tokens=True)
+    if tokenizer is not None:
+        a = sent_encode(tokenizer, a)
     return set(a)
 
 
@@ -150,7 +167,7 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
         - :param: `pad` (str): the padding token.
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
-    arr = [tokenizer.encode(a, add_special_tokens=True, max_length=tokenizer.max_len) for a in arr]
+    arr = [sent_encode(tokenizer, a) for a in arr]
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
 

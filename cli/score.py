@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import os
-import time
 import argparse
 import torch
-from collections import defaultdict
 
 import bert_score
 
@@ -15,7 +13,7 @@ def main():
     parser.add_argument('--lang', type=str, default=None,
                         help='two-letter abbreviation of the language (e.g., en) or "en-sci" for scientific text')
     parser.add_argument('-m', '--model', default=None,
-                        choices=bert_score.model_types, help='BERT model name (default: bert-base-uncased)')
+                        help='BERT model name (default: bert-base-uncased) or path to a pretrain model')
     parser.add_argument('-l', '--num_layers', type=int, default=None, help='use first N layer in BERT (default: 8)')
     parser.add_argument('-b', '--batch_size', type=int, default=64, help='batch size (default: 64)')
     parser.add_argument('--idf', action='store_true', help='BERT Score with IDF scaling')

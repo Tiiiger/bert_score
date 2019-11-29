@@ -1,18 +1,15 @@
-import os
 import time
-import argparse
 import torch
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 from collections import defaultdict
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoTokenizer
 
 from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
                     get_bert_embedding, model_types,
                     lang2model, model2layers, get_hash,
-                    cache_scibert)
+                    cache_scibert, sent_encode)
 
 
 __all__ = ['score', 'plot_example']
@@ -32,7 +29,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         - :param: `num_layers` (int): the layer of representation to use.
                   default using the number of layer tuned on WMT16 correlation data
         - :param: `verbose` (bool): turn on intermediate status update
-        - :param: `idf` (bool): use idf weighting
+        - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `lang` (str): language of the sentences; has to specify 
                   at least one of `model_type` or `lang`
@@ -68,6 +65,10 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         # set idf for [SEP] and [CLS] to 0
         idf_dict[tokenizer.sep_token_id] = 0
         idf_dict[tokenizer.cls_token_id] = 0
+    elif isinstance(idf, dict):
+        if verbose:
+            print('using predefined IDF dict...')
+        idf_dict = idf
     else:
         if verbose:
             print('preparing IDF dict...')
@@ -95,7 +96,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     else:
         return P, R, F1
 
-# Under Construction
+
 def plot_example(candidate, reference, model_type=None, lang=None, num_layers=None, fname=''):
     """
     BERTScore metric.
@@ -148,8 +149,8 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     sim = sim.squeeze(0).cpu()
 
     # remove [CLS] and [SEP] tokens 
-    r_tokens = [tokenizer.decode([i]) for i in tokenizer.encode(reference)]
-    h_tokens = [tokenizer.decode([i]) for i in tokenizer.encode(candidate)]
+    r_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, reference)][1:-1]
+    h_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, candidate)][1:-1]
     sim = sim[1:-1,1:-1]
 
     fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))

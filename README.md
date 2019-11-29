@@ -3,6 +3,9 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
 #### News:
+- Updated to version 0.2.2
+  - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evalutation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
+  - the best number of layers for DistilRoBERTa is included
 - Updated to version 0.2.1
   - [SciBERT](https://github.com/allenai/scibert) (Beltagy et al.) models are now included. Thanks to AI2 for sharing the models. By default, we use the 9th layer (the same as BERT-base), but this is not tuned. 
 - Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
@@ -77,9 +80,9 @@ bert-score -r example/refs.txt -c example/hyps.txt --lang en
 ```
 You will get the following output at the end:
 
-roberta-large_L17_no-idf_version=0.2.1 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
+roberta-large_L17_no-idf_version=0.2.2 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
 
-where "roberta-large_L17_no-idf_version=0.2.1" is the hashcode.
+where "roberta-large_L17_no-idf_version=0.2.2" is the hashcode.
 
 2. To evaluate text files in other languages:
 
