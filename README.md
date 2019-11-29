@@ -6,6 +6,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.2.2
   - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evalutation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
   - the best number of layers for DistilRoBERTa is included
+  - support loading a custom model
 - Updated to version 0.2.1
   - [SciBERT](https://github.com/allenai/scibert) (Beltagy et al.) models are now included. Thanks to AI2 for sharing the models. By default, we use the 9th layer (the same as BERT-base), but this is not tuned. 
 - Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
@@ -92,7 +93,13 @@ Please specify the two-letter abbrevation of the language. For instance, using `
 
 See more options by `bert-score -h`.
 
-3. To visualize matching scores:
+3. To load your own custom model:
+Please specify the path to the model and the number of layers to use by `--model` and `--num_layers`.
+```sh
+bert-score -r example/refs.txt -c example/hyps.txt --model path_to_my_bert --num_layers 9
+```
+
+4. To visualize matching scores:
 ```sh
 bert-score-show --lang en -r "There are two bananas on the table." -c "On the table are two apples." -f out.png
 ```

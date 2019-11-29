@@ -51,7 +51,6 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         num_layers = model2layers[model_type]
 
 
-    assert model_type in model_types
     if model_type.startswith('scibert'):
         tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
     else:

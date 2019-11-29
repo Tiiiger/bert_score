@@ -79,23 +79,22 @@ def get_model(model_type, num_layers, all_layers=None):
     model.eval()
 
     # drop unused layers
-    # TODO: detect by the model class instead of string name
     if not all_layers:
-        if model_type.startswith('bert') or model_type.startswith('roberta') or model_type.startswith('scibert'):
-            model.encoder.layer =\
-                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
-        elif model_type.startswith('xlnet'):
+        if hasattr(model, 'n_layers'): # xlm
+            model.n_layers = num_layers
+        elif hasattr(model, 'layer'): # xlnet
             model.layer =\
                 torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
-        elif model_type.startswith('xlm'):
-            model.n_layers = num_layers
+        elif hasattr(model, 'encoder'): # bert, roberta
+            model.encoder.layer =\
+                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
         else:
             raise ValueError("Not supported")
     else:
-        if 'bert' == model_type[:4] or 'roberta' == model_type[:7]:
-            model.encoder.output_hidden_states = True
-        else:
+        if hasattr(model, 'output_hidden_states'):
             model.output_hidden_states = True
+        else:
+            model.encoder.output_hidden_states = True
     return model
 
 
