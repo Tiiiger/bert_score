@@ -38,7 +38,6 @@ lang2model.update({
 
 
 model2layers = {
-    'bert-base-multilingual-cased'  : 9,
     'bert-base-uncased': 9,
     'bert-large-uncased': 18,
     'bert-base-cased-finetuned-mrpc': 9,
@@ -111,7 +110,6 @@ def padding(arr, pad_token, dtype=torch.long):
 
 def bert_encode(model, x, attention_mask, all_layers=False):
     model.eval()
-    x_seg = torch.zeros_like(x, dtype=torch.long)
     with torch.no_grad():
         out = model(x, attention_mask=attention_mask)
     if all_layers:
@@ -170,7 +168,7 @@ def collate_idf(arr, tokenizer, idf_dict, device='cuda:0'):
 
     idf_weights = [[idf_dict[i] for i in a] for a in arr]
 
-    pad_token = tokenizer._convert_token_to_id(tokenizer.pad_token)
+    pad_token = tokenizer.pad_token_id
 
     padded, lens, mask = padding(arr, pad_token, dtype=torch.long)
     padded_idf, _, _ = padding(idf_weights, 0, dtype=torch.float)
