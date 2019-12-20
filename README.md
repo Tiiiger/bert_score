@@ -1,8 +1,9 @@
 # BERTScore
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python) [![Downloads](https://pepy.tech/badge/bert-score)](https://pepy.tech/project/bert-score) [![Downloads](https://pepy.tech/badge/bert-score/month)](https://pepy.tech/project/bert-score/month) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675).
+Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- BERTScore gets accepted in ICLR 2020. Please come to our poster in Addis Ababa, Ethiopia!
 - Updated to version 0.2.2
   - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evalutation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
   - the best number of layers for DistilRoBERTa is included
@@ -18,7 +19,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 
 #### Authors:
 * [Tianyi Zhang](https://scholar.google.com/citations?user=OI0HSa0AAAAJ&hl=en)*
-* Varsha Kishore*
+* [Varsha Kishore](https://scholar.google.com/citations?user=B8UeYcEAAAAJ&authuser=2)*
 * [Felix Wu](https://sites.google.com/view/felixwu/home)*
 * [Kilian Q. Weinberger](http://kilian.cs.cornell.edu/index.html)
 * [Yoav Artzi](https://yoavartzi.com/)
@@ -38,11 +39,12 @@ For an illustration, BERTScore precision can be computed as
 
 If you find this repo useful, please cite:
 ```
-@article{bert-score,
+@inproceedings{bert-score,
   title={BERTScore: Evaluating Text Generation with BERT},
-  author={Zhang, Tianyi and Kishore, Varsha and Wu, Felix and Weinberger, Kilian Q. and Artzi, Yoav.},
-  journal={arXiv preprint arXiv:1904.09675},
-  year={2019}
+  author={Tianyi Zhang* and Varsha Kishore* and Felix Wu* and Kilian Q. Weinberger and Yoav Artzi},
+  booktitle={International Conference on Learning Representations},
+  year={2020},
+  url={https://openreview.net/forum?id=SkeHuCVFDr}
 }
 ```
 
