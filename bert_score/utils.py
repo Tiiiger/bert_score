@@ -108,7 +108,7 @@ def get_model(model_type, num_layers, all_layers=None):
                     torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
         elif hasattr(model, 'transformer'): # bert, roberta
             model.transformer.layer =\
-                torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+                torch.nn.ModuleList([layer for layer in model.transformer.layer[:num_layers]])
         else:
             raise ValueError("Not supported")
     else:
