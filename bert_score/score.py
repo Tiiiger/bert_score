@@ -124,7 +124,6 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-    assert model_type in model_types
     if model_type.startswith('scibert'):
         tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
     else:

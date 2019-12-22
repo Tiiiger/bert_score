@@ -1,6 +1,7 @@
 import unittest
 import torch
 import bert_score
+from transformers import __version__ as ht_version
 
 EPS = 1e-6
 
@@ -24,7 +25,7 @@ class TestScore(unittest.TestCase):
         self.assertTrue(torch.is_tensor(P))
         self.assertTrue(torch.is_tensor(R))
         self.assertTrue(torch.is_tensor(F))
-        self.assertEqual(hash_code, f'roberta-large_L17_no-idf_version={bert_score.__version__}')
+        self.assertEqual(hash_code, f'roberta-large_L17_no-idf_version={bert_score.__version__}(hug_trans={ht_version})')
         self.assertTrue((P - torch.tensor([0.9843302369117737, 0.9832239747047424, 0.9120386242866516])).abs_().max() < EPS)
         self.assertTrue((R - torch.tensor([0.9823839068412781, 0.9732863903045654, 0.920428991317749])).abs_().max() < EPS)
         self.assertTrue((F - torch.tensor([0.9833561182022095, 0.9782299995422363, 0.916214644908905])).abs_().max() < EPS)
@@ -37,7 +38,7 @@ class TestScore(unittest.TestCase):
         self.assertTrue(torch.is_tensor(P))
         self.assertTrue(torch.is_tensor(R))
         self.assertTrue(torch.is_tensor(F))
-        self.assertEqual(hash_code, f'roberta-large_L17_idf_version={bert_score.__version__}')
+        self.assertEqual(hash_code, f'roberta-large_L17_idf_version={bert_score.__version__}(hug_trans={ht_version})')
         self.assertTrue((P - torch.tensor([0.9837872385978699, 0.9754738807678223, 0.8947395086288452])).abs_().max() < EPS)
         self.assertTrue((R - torch.tensor([0.9827190637588501, 0.9697767496109009, 0.9172918796539307])).abs_().max() < EPS)
         self.assertTrue((F - torch.tensor([0.9832529425621033, 0.972616970539093, 0.9058753848075867])).abs_().max() < EPS)

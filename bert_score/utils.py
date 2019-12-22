@@ -13,6 +13,7 @@ from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
 from transformers import AutoModel, GPT2Tokenizer
 
 from . import __version__
+from transformers import __version__ as trans_version
 
 __all__ = ['model_types']
 
@@ -44,8 +45,10 @@ model2layers = {
     'bert-base-multilingual-cased': 9,
     'bert-base-chinese': 8,
     'roberta-base': 10,
-    'roberta-large': 17,
-    'roberta-large-mnli': 19,
+    'roberta-large': 17, # 0.7385974720781534
+    'roberta-large-mnli': 19, # 0.7535618640417984
+    'roberta-base-openai-detector': 7, # 0.7048158349432633
+    'roberta-large-openai-detector': 15, # 0.7462770207355116
     'xlnet-base-cased': 5, 
     'xlnet-large-cased': 7, 
     'xlm-mlm-en-2048': 7, 
@@ -54,7 +57,20 @@ model2layers = {
     'scibert-scivocab-cased': 9,
     'scibert-basevocab-uncased': 9,
     'scibert-basevocab-cased':  9,
-    'distilroberta-base': 5,
+    'distilroberta-base': 5, # 0.6797558139322964
+    'distilbert-base-uncased': 5, # 0.6756659152782033
+    'distilbert-base-uncased-distilled-squad': 4, # 0.6718318036382493
+    'distilbert-base-multilingual-cased': 5, # 0.6178131050889238
+    'albert-base-v1': 10, # 0.654237567249745
+    'albert-large-v1': 17, # 0.6755890754323239
+    'albert-xlarge-v1': 16, # 0.7031844211905911
+    'albert-xxlarge-v1': 8, # 0.7508642218461096
+    'albert-base-v2': 9, # 0.6682455591837927
+    'albert-large-v2': 14, # 0.7008537594374035
+    'albert-xlarge-v2': 13, # 0.7317228357869254
+    'albert-xxlarge-v2': 8, # 0.7505160257184014
+    'xlm-roberta-base': 9, # 0.6506799445871697
+    'xlm-roberta-large': 17, # 0.6941551437476826
 }
 
 
@@ -84,16 +100,27 @@ def get_model(model_type, num_layers, all_layers=None):
         elif hasattr(model, 'layer'): # xlnet
             model.layer =\
                 torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
-        elif hasattr(model, 'encoder'): # bert, roberta
-            model.encoder.layer =\
+        elif hasattr(model, 'encoder'): # albert
+            if hasattr(model.encoder, 'albert_layer_groups'):
+                model.encoder.config.num_hidden_layers = num_layers
+            else:  # bert, roberta
+                model.encoder.layer =\
+                    torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+        elif hasattr(model, 'transformer'): # bert, roberta
+            model.transformer.layer =\
                 torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
         else:
             raise ValueError("Not supported")
     else:
         if hasattr(model, 'output_hidden_states'):
             model.output_hidden_states = True
-        else:
+        elif hasattr(model, 'encoder'):
             model.encoder.output_hidden_states = True
+        elif hasattr(model, 'transformer'):
+            model.transformer.output_hidden_states = True
+        else:
+            raise ValueError('Not supported model architecture')
+
     return model
 
 
@@ -371,8 +398,8 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
 
 
 def get_hash(model, num_layers, idf):
-    msg = '{}_L{}{}_version={}'.format(
-        model, num_layers, '_idf' if idf else '_no-idf', __version__)
+    msg = '{}_L{}{}_version={}(hug_trans={})'.format(
+        model, num_layers, '_idf' if idf else '_no-idf', __version__, trans_version)
     return msg
 
 

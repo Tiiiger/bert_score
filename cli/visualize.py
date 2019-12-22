@@ -13,8 +13,7 @@ def main():
 
     parser = argparse.ArgumentParser('Visualize BERTScore')
     parser.add_argument('--lang', type=str, default='en', help='two-letter abbreviation of the language (e.g., en)')
-    parser.add_argument('-m', '--model', default=None,
-                        choices=bert_score.model_types, help='BERT model name (default: bert-base-uncased)')
+    parser.add_argument('-m', '--model', default=None, help='BERT model name (default: bert-base-uncased)')
     parser.add_argument('-l', '--num_layers', type=int, default=None, help='use first N layer in BERT (default: 8)')
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     parser.add_argument('-r', '--ref', type=str, required=True, help='reference sentence')

@@ -3,11 +3,14 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- Updated to version 0.2.3
+  - Supporting DistilBERT (Sanh et al.), ALBERT (Lan et al.), and XLM-R (Conneau et al.) models.
+  - Including the version of huggingface's transformers in the hash code for reproducibility
 - BERTScore gets accepted in ICLR 2020. Please come to our poster in Addis Ababa, Ethiopia!
 - Updated to version 0.2.2
   - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evalutation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
-  - the best number of layers for DistilRoBERTa is included
-  - support loading a custom model
+  - The best number of layers for DistilRoBERTa is included
+  - Supporting loading a custom model
 - Updated to version 0.2.1
   - [SciBERT](https://github.com/allenai/scibert) (Beltagy et al.) models are now included. Thanks to AI2 for sharing the models. By default, we use the 9th layer (the same as BERT-base), but this is not tuned. 
 - Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
@@ -83,9 +86,9 @@ bert-score -r example/refs.txt -c example/hyps.txt --lang en
 ```
 You will get the following output at the end:
 
-roberta-large_L17_no-idf_version=0.2.2 BERT-P: 0.950530 BERT-R: 0.949223 BERT-F1: 0.949839
+roberta-large_L17_no-idf_version=0.2.3(hug_trans=2.3.0) BERT-P: 0.957378 BERT-R: 0.961325 BERT-F1: 0.959333
 
-where "roberta-large_L17_no-idf_version=0.2.2" is the hashcode.
+where "roberta-large_L17_no-idf_version=0.2.3(hug_trans=2.3.0)" is the hash code.
 
 2. To evaluate text files in other languages:
 
@@ -146,25 +149,41 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | others    | bert-base-multilingual-cased |
 
 #### Default Layers
-| Model                           | Best Layer | Max Length    |
-|:-------------------------------:|------------| ------------- |
-| bert-base-uncased               | 9          | 512           |
-| bert-large-uncased              | 18         | 512           |
-| bert-base-cased-finetuned-mrpc  | 9          | 512           |
-| bert-base-multilingual-cased    | 9          | 512           |
-| bert-base-chinese               | 8          | 512           |
-| roberta-base                    | 10         | 512           |
-| roberta-large                   | 17         | 512           |
-| roberta-large-mnli              | 19         | 512           |
-| xlnet-base-cased                | 5          | 1000000000000 |
-| xlnet-large-cased               | 7          | 1000000000000 |
-| xlm-mlm-en-2048                 | 7          | 512           |
-| xlm-mlm-100-1280                | 11         | 512           |
-| scibert-scivocab-uncased        | 9*         | 512           |
-| scibert-scivocab-cased          | 9*         | 512           |
-| scibert-basevocab-uncased       | 9*         | 512           |
-| scibert-basevocab-cased         | 9*         | 512           |
-| distilroberta-base              | 5          | 512           |
+| Model                                      | Best Layer | Max Length    |
+|:------------------------------------------:|------------| ------------- |
+| bert-base-uncased                          | 9          | 512           |
+| bert-large-uncased                         | 18         | 512           |
+| bert-base-cased-finetuned-mrpc             | 9          | 512           |
+| bert-base-multilingual-cased               | 9          | 512           |
+| bert-base-chinese                          | 8          | 512           |
+| roberta-base                               | 10         | 512           |
+| roberta-large                              | 17         | 512           |
+| roberta-large-mnli                         | 19         | 512           |
+| roberta-base-openai-detector               | 7          | 512           |
+| roberta-large-openai-detector              | 19         | 512           |
+| xlnet-base-cased                           | 5          | 1000000000000 |
+| xlnet-large-cased                          | 7          | 1000000000000 |
+| xlm-mlm-en-2048                            | 7          | 512           |
+| xlm-mlm-100-1280                           | 11         | 512           |
+| scibert-scivocab-uncased                   | 9*         | 512           |
+| scibert-scivocab-cased                     | 9*         | 512           |
+| scibert-basevocab-uncased                  | 9*         | 512           |
+| scibert-basevocab-cased                    | 9*         | 512           |
+| distilroberta-base                         | 5          | 512           |
+| distilbert-base                            | 5          | 512           |
+| distilbert-base-uncased                    | 5          | 512           |
+| distilbert-base-uncased-distilled-squad    | 4          | 512           |
+| distilbert-base-multilingual-cased         | 5          | 512           |
+| albert-base-v1                             | 10         | 512           |
+| albert-large-v1                            | 17         | 512           |
+| albert-xlarge-v1                           | 16         | 512           |
+| albert-xxlarge-v1                          | 8          | 512           |
+| albert-base-v2                             | 9          | 512           |
+| albert-large-v2                            | 14         | 512           |
+| albert-xlarge-v2                           | 13         | 512           |
+| albert-xxlarge-v2                          | 8          | 512           |
+| xlm-roberta-base                           | 9          | 512           |
+| xlm-roberta-large                          | 17         | 512           |
 
 *: Not tuned
 
