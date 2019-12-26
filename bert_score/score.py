@@ -2,6 +2,7 @@ import time
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from collections import defaultdict
 from transformers import AutoTokenizer
@@ -16,7 +17,7 @@ __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
           idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False):
+          return_hash=False, rescale_with_baseline=False):
     """
     BERTScore metric.
 
@@ -34,10 +35,13 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         - :param: `lang` (str): language of the sentences; has to specify 
                   at least one of `model_type` or `lang`
         - :param: `return_hash` (bool): return hash code of the setting
+        - :param: `use_base` (bool): rescale bertscore with pre-computed baseline
 
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
-                  candidate reference pairs
+                  candidate reference pairs. if rescaling with baseline, the return will be
+                  `(P, R, F), (P_rescale, R_rescale, F_rescale)`. if returning hashcode, the 
+                  hash string will be appended to the returns.
     """
     assert len(cands) == len(refs)
 
@@ -81,19 +85,29 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     start = time.perf_counter()
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
                                    verbose=verbose, device=device, 
-                                   batch_size=batch_size, all_layers=all_layers)
+                                   batch_size=batch_size, all_layers=all_layers).cpu()
+    if rescale_with_baseline:
+        if not all_layers:
+            baselines = torch.from_numpy(
+                pd.read_csv(f"random_baseline/en/{model_type}.tsv").iloc[num_layers].to_numpy()
+            )[1:].float()
+        else:
+            baselines = torch.from_numpy(
+                pd.read_csv(f"random_baseline/en/{model_type}.tsv").to_numpy()
+            )[:, 1:].unsqueeze(1).float()
+            
+        all_preds = (all_preds - baselines) / (1 - baselines)
 
-    P = all_preds[..., 0].cpu()
-    R = all_preds[..., 1].cpu()
-    F1 = all_preds[..., 2].cpu()
+    out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2] # P, R, F
+
     if verbose:
         time_diff = time.perf_counter() - start
         print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
 
     if return_hash:
-        return (P, R, F1), get_hash(model_type, num_layers, idf)
-    else:
-        return P, R, F1
+        return out+(get_hash(model_type, num_layers, idf, rescale_with_baseline),)
+
+    return out
 
 
 def plot_example(candidate, reference, model_type=None, lang=None, num_layers=None, fname=''):
