@@ -121,7 +121,8 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     return out
 
 
-def plot_example(candidate, reference, model_type=None, lang=None, num_layers=None, fname=''):
+def plot_example(candidate, reference, model_type=None, num_layers=None, lang=None, 
+                 rescale_with_baseline=False, fname=''):
     """
     BERTScore metric.
 
@@ -132,9 +133,12 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
         - :param: `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
-        - :param: `lang` (str): language of the sentences; has to specify
-                  at least one of `model_type` or `lang`
         - :param: `num_layers` (int): the layer of representation to use
+        - :param: `lang` (str): language of the sentences; has to specify
+                  at least one of `model_type` or `lang`. `lang` needs to be
+                  specified when `rescale_with_baseline` is True.
+        - :param: `return_hash` (bool): return hash code of the setting
+        - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
         - :param: `fname` (str): path to save the output plot
     """
     assert isinstance(candidate, str)
@@ -142,6 +146,9 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    if rescale_with_baseline:
+        assert lang is not None, 'Need to specify Language when rescaling with baseline'
 
     if model_type is None:
         lang = lang.lower()
@@ -176,6 +183,18 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     h_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, candidate)][1:-1]
     sim = sim[1:-1,1:-1]
 
+    if rescale_with_baseline:
+        baseline_path = os.path.join(
+            pathlib.Path(__file__).parents[1],
+            f"rescale_baseline/{lang}/{model_type}.tsv"
+        )
+        if not os.path.isfile(baseline_path):
+            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
+        baselines = torch.from_numpy(
+            pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+        )[1:].float()
+        sim = (sim-baselines[2].item()) / (1-baselines[2].item())
+
     fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
     im = ax.imshow(sim, cmap='Blues')
 
@@ -185,7 +204,7 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
-    plt.xlabel("Refernce (tokenized)", fontsize=14)
+    plt.xlabel("Reference (tokenized)", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
     plt.title("Similarity Matrix", fontsize=14)
 
