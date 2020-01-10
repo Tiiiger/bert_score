@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="bert_score",
-    version='0.2.3',
+    version='0.3.0',
     author="Tianyi Zhang*, Varsha Kishore*, Felix Wu*, Kilian Q. Weinberger, and Yoav Artzi",
     author_email="tzhang@asapp.com",
     description="PyTorch implementation of BERT score",
@@ -16,6 +16,7 @@ setup(
                                     "tests.*", "tests"]),
     install_requires=['torch>=1.0.0',
                       'numpy',
+                      'pandas',
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
