@@ -1,4 +1,6 @@
+import os
 import time
+import pathlib
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,21 +34,24 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
         - :param: `batch_size` (int): bert score processing batch size
-        - :param: `lang` (str): language of the sentences; has to specify 
-                  at least one of `model_type` or `lang`
+        - :param: `lang` (str): language of the sentences; has to specify
+                  at least one of `model_type` or `lang`. `lang` needs to be
+                  specified when `rescale_with_baseline` is True.
         - :param: `return_hash` (bool): return hash code of the setting
-        - :param: `use_base` (bool): rescale bertscore with pre-computed baseline
+        - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
 
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
-                  candidate reference pairs. if rescaling with baseline, the return will be
-                  `(P, R, F), (P_rescale, R_rescale, F_rescale)`. if returning hashcode, the 
-                  hash string will be appended to the returns.
+                  candidate reference pairs. if returning hashcode, the
+                  output will be ((P, R, F), hashcode).
     """
     assert len(cands) == len(refs)
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    if rescale_with_baseline:
+        assert lang is not None, 'Need to specify Language when rescaling with baseline'
 
     if model_type is None:
         lang = lang.lower()
@@ -84,18 +89,24 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         print('calculating scores...')
     start = time.perf_counter()
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
-                                   verbose=verbose, device=device, 
+                                   verbose=verbose, device=device,
                                    batch_size=batch_size, all_layers=all_layers).cpu()
     if rescale_with_baseline:
+        baseline_path = os.path.join(
+            pathlib.Path(__file__).parents[1],
+            f"rescale_baseline/{lang}/{model_type}.tsv"
+        )
+        if not os.path.isfile(baseline_path):
+            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
         if not all_layers:
             baselines = torch.from_numpy(
-                pd.read_csv(f"random_baseline/en/{model_type}.tsv").iloc[num_layers].to_numpy()
+                pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
             )[1:].float()
         else:
             baselines = torch.from_numpy(
-                pd.read_csv(f"random_baseline/en/{model_type}.tsv").to_numpy()
+                pd.read_csv(baseline_path).to_numpy()
             )[:, 1:].unsqueeze(1).float()
-            
+
         all_preds = (all_preds - baselines) / (1 - baselines)
 
     out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2] # P, R, F
@@ -105,7 +116,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
 
     if return_hash:
-        return out+(get_hash(model_type, num_layers, idf, rescale_with_baseline),)
+        return tuple([out, get_hash(model_type, num_layers, idf, rescale_with_baseline)])
 
     return out
 
@@ -121,7 +132,7 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
         - :param: `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
-        - :param: `lang` (str): language of the sentences; has to specify 
+        - :param: `lang` (str): language of the sentences; has to specify
                   at least one of `model_type` or `lang`
         - :param: `num_layers` (int): the layer of representation to use
         - :param: `fname` (str): path to save the output plot
@@ -160,7 +171,7 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
     sim = sim.squeeze(0).cpu()
 
-    # remove [CLS] and [SEP] tokens 
+    # remove [CLS] and [SEP] tokens
     r_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, reference)][1:-1]
     h_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, candidate)][1:-1]
     sim = sim[1:-1,1:-1]
