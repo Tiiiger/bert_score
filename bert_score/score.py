@@ -45,7 +45,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
                   candidate reference pairs. if returning hashcode, the
                   output will be ((P, R, F), hashcode).
     """
-    assert len(cands) == len(refs)
+    assert len(cands) == len(refs), "Different number of candidates and references"
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
@@ -195,8 +195,9 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
         )[1:].float()
         sim = (sim-baselines[2].item()) / (1-baselines[2].item())
 
-    fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
-    im = ax.imshow(sim, cmap='Blues')
+    fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
+    im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
+    fig.colorbar(im, ax=ax)
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(r_tokens)))
@@ -204,7 +205,7 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
-    plt.xlabel("Reference (tokenized)", fontsize=14)
+    plt.xlabel("Reference (tokenized)\n", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
     plt.title("Similarity Matrix", fontsize=14)
 
@@ -216,10 +217,10 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     for i in range(len(h_tokens)):
         for j in range(len(r_tokens)):
             text = ax.text(j, i, '{:.3f}'.format(sim[i, j].item()),
-                           ha="center", va="center", color="k" if sim[i, j].item() < 0.6 else "w")
+                           ha="center", va="center", color="k" if sim[i, j].item() < 0.5 else "w")
 
     fig.tight_layout()
     if fname != "":
-        print("Saved figure to file: ", fname)
         plt.savefig(fname, dpi=100)
+        print("Saved figure to file: ", fname)
     plt.show()
