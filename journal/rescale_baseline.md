@@ -7,7 +7,7 @@ In practice, however, BERTscore is usually found to be in a small range.
 For an extreme case, BERTScore computed with the large RoBERTa model often is between 0.85 and 0.95.
 
 Although BERTscore correlates highly with human judgment in spite of the above mentioned caveat, BERTScore will
-be easier to interpre and work with if it has a natural range (for example, between 0 and 1).
+be easier to interpret and work with if it has a natural range (for example, between 0 and 1).
 Therefore, we seek a method to rescale BERTScore to have an intuitive range.
 Let's denote the BERTScore for a pair of candidate and reference sentence as <img src="https://render.githubusercontent.com/render/math?math=X.">
 Let <img src="https://render.githubusercontent.com/render/math?math=Base"> be a lower bound for BERTScores that we typically observe in practice (i.e. <img src="https://render.githubusercontent.com/render/math?math=-1 < Base < 1">).
