@@ -38,7 +38,7 @@ After scaling:
 
 Clearly, the rescaling produces a more readable output. Occationally, some of the similarity entries will become negative after rescaling but they won't affect BERTScore results because the rescaling is done after BERTScore is computed. 
 
-We package this feature into our library. Here's an example on how to use it (note that the language needs to be specified in order to use this feature):
+We package this feature into our library (>=0.3.0). Here's an example on how to use it (note that the language needs to be specified in order to use this feature):
 ```python
 out = bert_score.score(
     cands, refs, 
