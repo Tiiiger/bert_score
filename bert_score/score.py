@@ -120,7 +120,6 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
 
     return out
 
-
 def plot_example(candidate, reference, model_type=None, num_layers=None, lang=None, 
                  rescale_with_baseline=False, fname=''):
     """
@@ -195,6 +194,7 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
         )[1:].float()
         sim = (sim-baselines[2].item()) / (1-baselines[2].item())
 
+
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
     im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
     fig.colorbar(im, ax=ax)
@@ -205,7 +205,7 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
-    plt.xlabel("Reference (tokenized)\n", fontsize=14)
+    plt.xlabel("Reference (tokenized)", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
     plt.title("Similarity Matrix", fontsize=14)
 
