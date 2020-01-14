@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import pathlib
 import torch
@@ -93,21 +94,22 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
                                    batch_size=batch_size, all_layers=all_layers).cpu()
     if rescale_with_baseline:
         baseline_path = os.path.join(
-            pathlib.Path(__file__).parents[1],
-            f"rescale_baseline/{lang}/{model_type}.tsv"
+            os.path.dirname(__file__),
+            f'rescale_baseline/{lang}/{model_type}.tsv'
         )
-        if not os.path.isfile(baseline_path):
-            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
-        if not all_layers:
-            baselines = torch.from_numpy(
-                pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
-            )[1:].float()
-        else:
-            baselines = torch.from_numpy(
-                pd.read_csv(baseline_path).to_numpy()
-            )[:, 1:].unsqueeze(1).float()
+        if os.path.isfile(baseline_path):
+            if not all_layers:
+                baselines = torch.from_numpy(
+                    pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+                )[1:].float()
+            else:
+                baselines = torch.from_numpy(
+                    pd.read_csv(baseline_path).to_numpy()
+                )[:, 1:].unsqueeze(1).float()
 
-        all_preds = (all_preds - baselines) / (1 - baselines)
+            all_preds = (all_preds - baselines) / (1 - baselines)
+        else:
+            print(f'Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}', file=sys.stderr)
 
     out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2] # P, R, F
 
@@ -184,16 +186,16 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
 
     if rescale_with_baseline:
         baseline_path = os.path.join(
-            pathlib.Path(__file__).parents[1],
+            os.path.dirname(__file__),
             f"rescale_baseline/{lang}/{model_type}.tsv"
         )
-        if not os.path.isfile(baseline_path):
-            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
-        baselines = torch.from_numpy(
-            pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
-        )[1:].float()
-        sim = (sim-baselines[2].item()) / (1-baselines[2].item())
-
+        if os.path.isfile(baseline_path):
+            baselines = torch.from_numpy(
+                pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+            )[1:].float()
+            sim = (sim - baselines[2].item()) / (1 - baselines[2].item())
+        else:
+            print(f'Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}', file=sys.stderr)
 
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
     im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)

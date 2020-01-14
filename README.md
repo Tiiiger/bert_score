@@ -92,9 +92,20 @@ bert-score -r example/refs.txt -c example/hyps.txt --lang en
 ```
 You will get the following output at the end:
 
-roberta-large_L17_no-idf_version=0.2.3(hug_trans=2.3.0) BERT-P: 0.957378 BERT-R: 0.961325 BERT-F1: 0.959333
+roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0) P: 0.957378 R: 0.961325 F1: 0.959333
 
-where "roberta-large_L17_no-idf_version=0.2.3(hug_trans=2.3.0)" is the hash code.
+where "roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)" is the hash code.
+
+Starting from versino 0.3.0, we support rescaling the scores with baseline scores
+```sh
+bert-score -r example/refs.txt -c example/hyps.txt --lang en
+```
+You will get:
+
+roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)-rescaled P: 0.747044 R: 0.770484 F1: 0.759045 
+
+This makes the range of the scores larger and more human-readable. Please see this [post](./journal/rescale_baseline.md) for details.
+
 
 2. To evaluate text files in other languages:
 
@@ -104,11 +115,13 @@ Please specify the two-letter abbrevation of the language. For instance, using `
 
 See more options by `bert-score -h`.
 
+
 3. To load your own custom model:
 Please specify the path to the model and the number of layers to use by `--model` and `--num_layers`.
 ```sh
 bert-score -r example/refs.txt -c example/hyps.txt --model path_to_my_bert --num_layers 9
 ```
+
 
 4. To visualize matching scores:
 ```sh

@@ -28,6 +28,7 @@ setup(
             "bert-score-show=bert_score_cli.visualize:main",
         ]
     },
+    include_package_data=True,
     python_requires='>=3.6',
     tests_require=['pytest'],
     classifiers=[

@@ -1,1 +1,1 @@
-graft rescale_baseline
+recursive-include bert_score/rescale_baseline *
