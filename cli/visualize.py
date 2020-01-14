@@ -19,11 +19,13 @@ def main():
     parser.add_argument('-r', '--ref', type=str, required=True, help='reference sentence')
     parser.add_argument('-c', '--cand', type=str, required=True, help='candidate sentence')
     parser.add_argument('-f', '--file', type=str, default='visualize.png', help='name of file to save output matrix in')
+    parser.add_argument('--rescale-with-baseline', action='store_true', help='Rescaling the numerical score with precomputed baselines')
 
     args = parser.parse_args()
  
     bert_score.plot_example(args.cand, args.ref, model_type=args.model, 
-        lang=args.lang, num_layers=args.num_layers, fname=args.file)
+        lang=args.lang, num_layers=args.num_layers, fname=args.file,
+        rescale_with_baseline=args.rescale_with_baseline)
 
 
 if __name__ == "__main__":

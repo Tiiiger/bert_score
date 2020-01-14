@@ -3,6 +3,8 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- Updated to version 0.3.0
+  - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numercial range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguish examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
 - Updated to version 0.2.3
   - Supporting DistilBERT (Sanh et al.), ALBERT (Lan et al.), and XLM-R (Conneau et al.) models.
   - Including the version of huggingface's transformers in the hash code for reproducibility
