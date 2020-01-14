@@ -39,20 +39,20 @@ lang2model.update({
 
 
 model2layers = {
-    'bert-base-uncased': 9,
-    'bert-large-uncased': 18,
-    'bert-base-cased-finetuned-mrpc': 9,
-    'bert-base-multilingual-cased': 9,
+    'bert-base-uncased': 9, # 0.6925188074454226
+    'bert-large-uncased': 18, # 0.7210358126642836
+    'bert-base-cased-finetuned-mrpc': 9, # 0.6721947475618048
+    'bert-base-multilingual-cased': 9, # 0.6680687802637132
     'bert-base-chinese': 8,
-    'roberta-base': 10,
+    'roberta-base': 10, # 0.706288719158983
     'roberta-large': 17, # 0.7385974720781534
     'roberta-large-mnli': 19, # 0.7535618640417984
     'roberta-base-openai-detector': 7, # 0.7048158349432633
     'roberta-large-openai-detector': 15, # 0.7462770207355116
-    'xlnet-base-cased': 5, 
-    'xlnet-large-cased': 7, 
-    'xlm-mlm-en-2048': 7, 
-    'xlm-mlm-100-1280': 11,
+    'xlnet-base-cased': 5, # 0.6630103662114238
+    'xlnet-large-cased': 7, # 0.6598800720297179
+    'xlm-mlm-en-2048': 6, # 0.651262570131464
+    'xlm-mlm-100-1280': 10, # 0.6475166424401905
     'scibert-scivocab-uncased': 9,
     'scibert-scivocab-cased': 9,
     'scibert-basevocab-uncased': 9,
