@@ -96,17 +96,27 @@ def get_model(model_type, num_layers, all_layers=None):
     # drop unused layers
     if not all_layers:
         if hasattr(model, 'n_layers'): # xlm
+            assert 0 <= num_layers <= model.n_layers, \
+                f"Invalid num_layers: num_layers should be between 0 and {model.n_layers} for {model_type}"
             model.n_layers = num_layers
         elif hasattr(model, 'layer'): # xlnet
+            assert 0 <= num_layers <= len(model.layer), \
+                f"Invalid num_layers: num_layers should be between 0 and {len(model.layer)} for {model_type}"
             model.layer =\
                 torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
         elif hasattr(model, 'encoder'): # albert
             if hasattr(model.encoder, 'albert_layer_groups'):
+                assert 0 <= num_layers <= model.encoder.config.num_hidden_layers, \
+                    f"Invalid num_layers: num_layers should be between 0 and {model.encoder.config.num_hidden_layers} for {model_type}"
                 model.encoder.config.num_hidden_layers = num_layers
             else:  # bert, roberta
+                assert 0 <= num_layers <= len(model.encoder.layer), \
+                    f"Invalid num_layers: num_layers should be between 0 and {len(model.encoder.layer)} for {model_type}"
                 model.encoder.layer =\
                     torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
         elif hasattr(model, 'transformer'): # bert, roberta
+            assert 0 <= num_layers <= len(model.transformer.layer), \
+                f"Invalid num_layers: num_layers should be between 0 and {len(model.transformer.layer)} for {model_type}"
             model.transformer.layer =\
                 torch.nn.ModuleList([layer for layer in model.transformer.layer[:num_layers]])
         else:
@@ -119,7 +129,7 @@ def get_model(model_type, num_layers, all_layers=None):
         elif hasattr(model, 'transformer'):
             model.transformer.output_hidden_states = True
         else:
-            raise ValueError('Not supported model architecture')
+            raise ValueError(f'Not supported model architecture: {model_type}')
 
     return model
 
@@ -397,9 +407,11 @@ def bert_cos_score_idf(model, refs, hyps, tokenizer, idf_dict,
     return preds
 
 
-def get_hash(model, num_layers, idf):
+def get_hash(model, num_layers, idf, rescale_with_baseline):
     msg = '{}_L{}{}_version={}(hug_trans={})'.format(
         model, num_layers, '_idf' if idf else '_no-idf', __version__, trans_version)
+    if rescale_with_baseline:
+        msg+="-rescaled"
     return msg
 
 

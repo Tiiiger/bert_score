@@ -1,7 +1,10 @@
+import os
 import time
+import pathlib
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from collections import defaultdict
 from transformers import AutoTokenizer
@@ -16,7 +19,7 @@ __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False,
           idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False):
+          return_hash=False, rescale_with_baseline=False):
     """
     BERTScore metric.
 
@@ -31,18 +34,24 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
         - :param: `batch_size` (int): bert score processing batch size
-        - :param: `lang` (str): language of the sentences; has to specify 
-                  at least one of `model_type` or `lang`
+        - :param: `lang` (str): language of the sentences; has to specify
+                  at least one of `model_type` or `lang`. `lang` needs to be
+                  specified when `rescale_with_baseline` is True.
         - :param: `return_hash` (bool): return hash code of the setting
+        - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
 
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
-                  candidate reference pairs
+                  candidate reference pairs. if returning hashcode, the
+                  output will be ((P, R, F), hashcode).
     """
-    assert len(cands) == len(refs)
+    assert len(cands) == len(refs), "Different number of candidates and references"
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    if rescale_with_baseline:
+        assert lang is not None, 'Need to specify Language when rescaling with baseline'
 
     if model_type is None:
         lang = lang.lower()
@@ -80,23 +89,39 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
         print('calculating scores...')
     start = time.perf_counter()
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
-                                   verbose=verbose, device=device, 
-                                   batch_size=batch_size, all_layers=all_layers)
+                                   verbose=verbose, device=device,
+                                   batch_size=batch_size, all_layers=all_layers).cpu()
+    if rescale_with_baseline:
+        baseline_path = os.path.join(
+            pathlib.Path(__file__).parents[1],
+            f"rescale_baseline/{lang}/{model_type}.tsv"
+        )
+        if not os.path.isfile(baseline_path):
+            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
+        if not all_layers:
+            baselines = torch.from_numpy(
+                pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+            )[1:].float()
+        else:
+            baselines = torch.from_numpy(
+                pd.read_csv(baseline_path).to_numpy()
+            )[:, 1:].unsqueeze(1).float()
 
-    P = all_preds[..., 0].cpu()
-    R = all_preds[..., 1].cpu()
-    F1 = all_preds[..., 2].cpu()
+        all_preds = (all_preds - baselines) / (1 - baselines)
+
+    out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2] # P, R, F
+
     if verbose:
         time_diff = time.perf_counter() - start
         print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
 
     if return_hash:
-        return (P, R, F1), get_hash(model_type, num_layers, idf)
-    else:
-        return P, R, F1
+        return tuple([out, get_hash(model_type, num_layers, idf, rescale_with_baseline)])
 
+    return out
 
-def plot_example(candidate, reference, model_type=None, lang=None, num_layers=None, fname=''):
+def plot_example(candidate, reference, model_type=None, num_layers=None, lang=None, 
+                 rescale_with_baseline=False, fname=''):
     """
     BERTScore metric.
 
@@ -107,9 +132,12 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
         - :param: `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
-        - :param: `lang` (str): language of the sentences; has to specify 
-                  at least one of `model_type` or `lang`
         - :param: `num_layers` (int): the layer of representation to use
+        - :param: `lang` (str): language of the sentences; has to specify
+                  at least one of `model_type` or `lang`. `lang` needs to be
+                  specified when `rescale_with_baseline` is True.
+        - :param: `return_hash` (bool): return hash code of the setting
+        - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
         - :param: `fname` (str): path to save the output plot
     """
     assert isinstance(candidate, str)
@@ -117,6 +145,9 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    if rescale_with_baseline:
+        assert lang is not None, 'Need to specify Language when rescaling with baseline'
 
     if model_type is None:
         lang = lang.lower()
@@ -146,13 +177,27 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
     sim = sim.squeeze(0).cpu()
 
-    # remove [CLS] and [SEP] tokens 
+    # remove [CLS] and [SEP] tokens
     r_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, reference)][1:-1]
     h_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, candidate)][1:-1]
     sim = sim[1:-1,1:-1]
 
-    fig, ax = plt.subplots(figsize=(len(r_tokens)*0.8, len(h_tokens)*0.8))
-    im = ax.imshow(sim, cmap='Blues')
+    if rescale_with_baseline:
+        baseline_path = os.path.join(
+            pathlib.Path(__file__).parents[1],
+            f"rescale_baseline/{lang}/{model_type}.tsv"
+        )
+        if not os.path.isfile(baseline_path):
+            raise ValueError(f"Baseline not Found for {model_type} on {lang}")
+        baselines = torch.from_numpy(
+            pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+        )[1:].float()
+        sim = (sim-baselines[2].item()) / (1-baselines[2].item())
+
+
+    fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
+    im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
+    fig.colorbar(im, ax=ax)
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(r_tokens)))
@@ -160,7 +205,7 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
-    plt.xlabel("Refernce (tokenized)", fontsize=14)
+    plt.xlabel("Reference (tokenized)", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
     plt.title("Similarity Matrix", fontsize=14)
 
@@ -172,10 +217,10 @@ def plot_example(candidate, reference, model_type=None, lang=None, num_layers=No
     for i in range(len(h_tokens)):
         for j in range(len(r_tokens)):
             text = ax.text(j, i, '{:.3f}'.format(sim[i, j].item()),
-                           ha="center", va="center", color="k" if sim[i, j].item() < 0.6 else "w")
+                           ha="center", va="center", color="k" if sim[i, j].item() < 0.5 else "w")
 
     fig.tight_layout()
     if fname != "":
-        print("Saved figure to file: ", fname)
         plt.savefig(fname, dpi=100)
+        print("Saved figure to file: ", fname)
     plt.show()
