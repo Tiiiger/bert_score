@@ -1,4 +1,4 @@
-# Rescaling BERTScore with baselines
+# Rescaling BERTScore with Baselines
 
 BERTScore computes a sentence-level similarity score by making use of token-level similarities, 
 produced by cosine similarities between contextual embeddings. 
