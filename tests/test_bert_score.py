@@ -3,7 +3,7 @@ import torch
 import bert_score
 from transformers import __version__ as ht_version
 
-EPS = 1e-6
+EPS = 1e-5
 
 cands = [
     "28-year-old chef found dead in San Francisco mall",
@@ -18,8 +18,10 @@ refs = [
 
 class TestScore(unittest.TestCase):
     def test_score(self):
-        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
-                                              idf=False, batch_size=3, return_hash=True)
+        (P, R, F), hash_code = bert_score.score(
+            cands, refs, model_type='roberta-large', num_layers=17,
+            idf=False, batch_size=3, return_hash=True
+        )
         # print(P.tolist(), R.tolist(), F.tolist())
 
         self.assertTrue(torch.is_tensor(P))
@@ -31,8 +33,10 @@ class TestScore(unittest.TestCase):
         self.assertTrue((F - torch.tensor([0.9833561182022095, 0.9782299995422363, 0.916214644908905])).abs_().max() < EPS)
 
     def test_idf_score(self):
-        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
-                                              idf=True, batch_size=3, return_hash=True)
+        (P, R, F), hash_code = bert_score.score(
+            cands, refs, model_type='roberta-large', num_layers=17,
+            idf=True, batch_size=3, return_hash=True
+        )
         # print(P.tolist(), R.tolist(), F.tolist())
 
         self.assertTrue(torch.is_tensor(P))
@@ -44,8 +48,11 @@ class TestScore(unittest.TestCase):
         self.assertTrue((F - torch.tensor([0.9832529425621033, 0.972616970539093, 0.9058753848075867])).abs_().max() < EPS)
 
     def test_score_rescale(self):
-        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
-                                              idf=False, batch_size=3, return_hash=True, rescale_with_baseline=True)
+        (P, R, F), hash_code = bert_score.score(
+            cands, refs, model_type='roberta-large', num_layers=17,
+            idf=False, batch_size=3, return_hash=True,
+            lang="en", rescale_with_baseline=True
+        )
         # print(P.tolist(), R.tolist(), F.tolist())
 
         self.assertTrue(torch.is_tensor(P))
@@ -57,8 +64,11 @@ class TestScore(unittest.TestCase):
         self.assertTrue((F - torch.tensor([0.901383399963379,0.871010780334473,0.503565192222595])).abs_().max() < EPS)
 
     def test_idf_score_rescale(self):
-        (P, R, F), hash_code = bert_score.score(cands, refs, model_type='roberta-large', num_layers=17,
-                                              idf=True, batch_size=3, return_hash=True, rescale_with_baseline=True)
+        (P, R, F), hash_code = bert_score.score(
+            cands, refs, model_type='roberta-large', num_layers=17,
+            idf=True, batch_size=3, return_hash=True,
+            lang="en", rescale_with_baseline=True
+        )
         # print(P.tolist(), R.tolist(), F.tolist())
 
         self.assertTrue(torch.is_tensor(P))

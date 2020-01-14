@@ -1,5 +1,3 @@
-# Python
-python>=3.6.0
 # PyTorch
 torch>=1.0.0
 # progress bars in model download and training scripts
