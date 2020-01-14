@@ -24,8 +24,8 @@ setup(
                       ],
     entry_points={
         'console_scripts': [
-            "bert-score=cli.score:main",
-            "bert-score-show=cli.visualize:main",
+            "bert-score=bert_score_cli.score:main",
+            "bert-score-show=bert_score_cli.visualize:main",
         ]
     },
     python_requires='>=3.6',
