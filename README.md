@@ -57,10 +57,14 @@ If you find this repo useful, please cite:
 * Python version >= 3.6
 * PyTorch version >= 1.0.0
 
-Install from pip by 
+Install from pypi with pip by 
 
 ```sh
 pip install bert-score
+```
+Install latest unstable version from the master branch on Github by:
+```
+pip install git+https://github.com/Tiiiger/bert_score
 ```
 
 Install it from the source by:
