@@ -3,7 +3,7 @@ import torch
 import bert_score
 from transformers import __version__ as ht_version
 
-EPS = 1e-6
+EPS = 1e-5
 
 cands = [
     "28-year-old chef found dead in San Francisco mall",
@@ -50,7 +50,7 @@ class TestScore(unittest.TestCase):
     def test_score_rescale(self):
         (P, R, F), hash_code = bert_score.score(
             cands, refs, model_type='roberta-large', num_layers=17,
-            idf=False, batch_size=3, return_hash=True, 
+            idf=False, batch_size=3, return_hash=True,
             lang="en", rescale_with_baseline=True
         )
         # print(P.tolist(), R.tolist(), F.tolist())
@@ -66,7 +66,7 @@ class TestScore(unittest.TestCase):
     def test_idf_score_rescale(self):
         (P, R, F), hash_code = bert_score.score(
             cands, refs, model_type='roberta-large', num_layers=17,
-            idf=True, batch_size=3, return_hash=True, 
+            idf=True, batch_size=3, return_hash=True,
             lang="en", rescale_with_baseline=True
         )
         # print(P.tolist(), R.tolist(), F.tolist())
