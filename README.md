@@ -96,9 +96,10 @@ roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0) P: 0.957378 R: 0.961325 
 
 where "roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)" is the hash code.
 
-Starting from versino 0.3.0, we support rescaling the scores with baseline scores
+Starting from version 0.3.0, we support rescaling the scores with baseline scores
+
 ```sh
-bert-score -r example/refs.txt -c example/hyps.txt --lang en
+bert-score -r example/refs.txt -c example/hyps.txt --lang en --rescale-with-baseline
 ```
 You will get:
 
