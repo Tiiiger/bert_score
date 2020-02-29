@@ -27,7 +27,7 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
 
     Args:
         - :param: `cands` (list of str): candidate sentences
-        - :param: `refs` (list of str): reference sentences
+        - :param: `refs` (list of str or list of list of str): reference sentences
         - :param: `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
@@ -54,6 +54,18 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    ref_group_boundaries = None
+    if not isinstance(refs[0], str):
+        ref_group_boundaries = []
+        ori_cands, ori_refs = cands, refs
+        cands, refs = [], []
+        count = 0
+        for cand, ref_group in zip(ori_cands, ori_refs):
+            cands += [cand] * len(ref_group)
+            refs += ref_group
+            ref_group_boundaries.append((count, len(ref_group)))
+            count += len(ref_group)
 
     if rescale_with_baseline:
         assert lang is not None, 'Need to specify Language when rescaling with baseline'
@@ -96,6 +108,13 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
                                    verbose=verbose, device=device,
                                    batch_size=batch_size, all_layers=all_layers).cpu()
+
+    if ref_group_boundaries is not None:
+        max_preds = []
+        for start, end in ref_group_boundaries:
+            max_preds.append(all_preds[start:end].max(dim=0)[0])
+        all_preds = torch.stack(max_preds, dim=0)
+
     if rescale_with_baseline:
         baseline_path = os.path.join(
             os.path.dirname(__file__),

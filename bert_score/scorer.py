@@ -124,8 +124,20 @@ class BERTScorer:
         """
         Args:
             - :param: `cands` (list of str): candidate sentences
-            - :param: `refs` (list of str): reference sentences
+            - :param: `refs` (list of str or list of list of str): reference sentences
         """
+
+        ref_group_boundaries = None
+        if not isinstance(refs[0], str):
+            ref_group_boundaries = []
+            ori_cands, ori_refs = cands, refs
+            cands, refs = [], []
+            count = 0
+            for cand, ref_group in zip(ori_cands, ori_refs):
+                cands += [cand] * len(ref_group)
+                refs += ref_group
+                ref_group_boundaries.append((count, len(ref_group)))
+                count += len(ref_group)
 
         if verbose:
             print('calculating scores...')
@@ -142,6 +154,12 @@ class BERTScorer:
         all_preds = bert_cos_score_idf(self.model, refs, cands, self.tokenizer, idf_dict,
                                        verbose=verbose, device=self.device,
                                        batch_size=batch_size, all_layers=self.all_layers).cpu()
+
+        if ref_group_boundaries is not None:
+            max_preds = []
+            for start, end in ref_group_boundaries:
+                max_preds.append(all_preds[start:end].max(dim=0)[0])
+            all_preds = torch.stack(max_preds, dim=0)
 
         if self.rescale_with_baseline:
             all_preds = (all_preds - self.baseline_vals) / (1 - self.baseline_vals)
