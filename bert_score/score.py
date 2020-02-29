@@ -215,7 +215,7 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     plt.ylabel("Candidate (tokenized)", fontsize=14)
     title = "Similarity Matrix"
     if rescale_with_baseline:
-        title += "(after Rescaling)"
+        title += " (after Rescaling)"
     plt.title(title, fontsize=14)
 
     divider = make_axes_locatable(ax)

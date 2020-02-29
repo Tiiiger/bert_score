@@ -4,6 +4,7 @@ import time
 import pathlib
 import torch
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 import warnings
@@ -156,7 +157,7 @@ class BERTScorer:
 
         return out
 
-    def plot(self, candidate, reference, fname=""):
+    def plot_example(self, candidate, reference, fname=""):
         """
         Args:
             - :param: `candidate` (str): a candidate sentence
@@ -167,25 +168,28 @@ class BERTScorer:
         assert isinstance(candidate, str)
         assert isinstance(reference, str)
         
-        hyp_embedding, masks, padded_idf = get_bert_embedding([candidate], self.model, self.tokenizer, self.idf_dict,
+        idf_dict = defaultdict(lambda: 1.)
+        idf_dict[self.tokenizer.sep_token_id] = 0
+        idf_dict[self.tokenizer.cls_token_id] = 0
+
+        hyp_embedding, masks, padded_idf = get_bert_embedding([candidate], self.model, self.tokenizer, idf_dict,
                                                              device=self.device, all_layers=False)
-        ref_embedding, masks, padded_idf = get_bert_embedding([reference], self.model, self.tokenizer, self.idf_dict,
+        ref_embedding, masks, padded_idf = get_bert_embedding([reference], self.model, self.tokenizer, idf_dict,
                                                              device=self.device, all_layers=False)
         ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
         hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
         sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
         sim = sim.squeeze(0).cpu()
 
-        r_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, reference)][1:-1]
-        h_tokens = [tokenizer.decode([i]) for i in sent_encode(tokenizer, candidate)][1:-1]
+        r_tokens = [self.tokenizer.decode([i]) for i in sent_encode(self.tokenizer, reference)][1:-1]
+        h_tokens = [self.tokenizer.decode([i]) for i in sent_encode(self.tokenizer, candidate)][1:-1]
         sim = sim[1:-1,1:-1]
 
         if self.rescale_with_baseline:
-            sim = (sim - self.baseline_vals[2].item()) / (1 - baseline_vals[2].item())
+            sim = (sim - self.baseline_vals[2].item()) / (1 - self.baseline_vals[2].item())
 
         fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
         im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
-        fig.colorbar(im, ax=ax)
 
         # We want to show all ticks...
         ax.set_xticks(np.arange(len(r_tokens)))
@@ -193,12 +197,17 @@ class BERTScorer:
         # ... and label them with the respective list entries
         ax.set_xticklabels(r_tokens, fontsize=10)
         ax.set_yticklabels(h_tokens, fontsize=10)
+        ax.grid(False)
         plt.xlabel("Reference (tokenized)", fontsize=14)
         plt.ylabel("Candidate (tokenized)", fontsize=14)
         title = "Similarity Matrix"
         if self.rescale_with_baseline:
-            title += "(after Rescaling)"
+            title += " (after Rescaling)"
         plt.title(title, fontsize=14)
+
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="2%", pad=0.2)
+        fig.colorbar(im, cax=cax)
 
         # Rotate the tick labels and set their alignment.
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
