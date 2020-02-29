@@ -4,6 +4,7 @@ import time
 import pathlib
 import torch
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 
@@ -18,8 +19,8 @@ from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
 
 __all__ = ['score', 'plot_example']
 
-def score(cands, refs, model_type=None, num_layers=None, verbose=False,
-          idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
+def score(cands, refs, model_type=None, num_layers=None, verbose=False, 
+          idf=False, device=None, batch_size=64, nthreads=4, all_layers=False, lang=None,
           return_hash=False, rescale_with_baseline=False):
     """
     BERTScore metric.
@@ -34,6 +35,9 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
                   default using the number of layer tuned on WMT16 correlation data
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
+        - :param: `device` (str): on which the contextual embedding model will be allocated on.
+                  If this argument is None, the model lives on cuda:0 if cuda is available.
+        - :param: `nthreads` (int): number of threads
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `lang` (str): language of the sentences; has to specify
                   at least one of `model_type` or `lang`. `lang` needs to be
@@ -60,11 +64,11 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-
     if model_type.startswith('scibert'):
         tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
     else:
         tokenizer = AutoTokenizer.from_pretrained(model_type)
+
     model = get_model(model_type, num_layers, all_layers)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
@@ -199,7 +203,6 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
 
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
     im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
-    fig.colorbar(im, ax=ax)
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(r_tokens)))
@@ -207,9 +210,17 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
+    ax.grid(False)
     plt.xlabel("Reference (tokenized)", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
-    plt.title("Similarity Matrix", fontsize=14)
+    title = "Similarity Matrix"
+    if rescale_with_baseline:
+        title += "(after Rescaling)"
+    plt.title(title, fontsize=14)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="2%", pad=0.2)
+    fig.colorbar(im, cax=cax)
 
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
