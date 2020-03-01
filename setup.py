@@ -16,7 +16,7 @@ setup(
                                     "tests.*", "tests"]),
     install_requires=['torch>=1.0.0',
                       'numpy',
-                      'pandas',
+                      'pandas>=1.0.1',
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
