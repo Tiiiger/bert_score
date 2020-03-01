@@ -5,5 +5,5 @@ tqdm>=4.31.1
 # BERT
 transformers>=2.0.0
 matplotlib
-pandas
+pandas>=1.0.1
 numpy
