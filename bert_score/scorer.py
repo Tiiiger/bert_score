@@ -59,52 +59,77 @@ class BERTScorer:
         else:
             self.device = device
 
-        self.idf = idf
+        self._lang = lang
+        self._rescale_with_baseline = rescale_with_baseline
+        self._idf = idf
         self.batch_size = batch_size
         self.nthreads = nthreads
         self.all_layers = all_layers
-        self.rescale_with_baseline = rescale_with_baseline
 
         if model_type is None:
             lang = lang.lower()
-            self.model_type = lang2model[lang]
+            self._model_type = lang2model[lang]
+        else:
+            self._model_type = model_type
+
         if num_layers is None:
-            self.num_layers = model2layers[self.model_type]
-
-        # load baseline values if needed
-        if self.rescale_with_baseline:
-            baseline_path = os.path.join(
-                os.path.dirname(__file__),
-                f'rescale_baseline/{lang}/{self.model_type}.tsv'
-            )
-            if os.path.isfile(baseline_path):
-                if not all_layers:
-                    baselines = torch.from_numpy(
-                        pd.read_csv(baseline_path).iloc[self.num_layers].to_numpy()
-                    )[1:].float()
-                else:
-                    baselines = torch.from_numpy(
-                        pd.read_csv(baseline_path).to_numpy()
-                    )[:, 1:].unsqueeze(1).float()
-
-                self.baseline_vals = baselines
-
-            else:
-                raise ValueError(f'Baseline not Found for {self.model_type} on {lang} at {baseline_path}')
+            self._num_layers = model2layers[self.model_type]
+        else:
+            self._num_layers = num_layers
 
         # Building model and tokenizer
 
         if self.model_type.startswith('scibert'):
-            self.tokenizer = AutoTokenizer.from_pretrained(cache_scibert(self.model_type))
+            self._tokenizer = AutoTokenizer.from_pretrained(cache_scibert(self.model_type))
         else:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_type)
+            self._tokenizer = AutoTokenizer.from_pretrained(self.model_type)
 
-        self.model = get_model(self.model_type, self.num_layers, self.all_layers)
-        self.model.to(self.device)
+        self._model = get_model(self.model_type, self.num_layers, self.all_layers)
+        self._model.to(self.device)
 
-        self.idf_dict = None
+        self._idf_dict = None
         if idf_sents is not None:
             self.compute_idf(idf_sents)
+
+    @property
+    def lang(self):
+        return self._lang
+
+    @property
+    def idf(self):
+        return self._idf
+
+    @property
+    def model_type(self):
+        return self._model_type
+
+    @property
+    def num_layers(self):
+        return self._num_layers
+
+    @property
+    def rescale_with_baseline(self):
+        return self._rescale_with_baseline
+
+    @property
+    def baseline_vals(self):
+        baseline_path = os.path.join(
+            os.path.dirname(__file__),
+            f'rescale_baseline/{self.lang}/{self.model_type}.tsv'
+        )
+        if os.path.isfile(baseline_path):
+            if not self.all_layers:
+                baseline_vals = torch.from_numpy(
+                    pd.read_csv(baseline_path).iloc[self.num_layers].to_numpy()
+                )[1:].float()
+            else:
+                baseline_vals = torch.from_numpy(
+                    pd.read_csv(baseline_path).to_numpy()
+                )[:, 1:].unsqueeze(1).float()
+        else:
+            raise ValueError(f'Baseline not Found for {self.model_type} on {self.lang} at {baseline_path}')
+
+        return baseline_vals
 
     @property
     def hash(self):
@@ -115,10 +140,10 @@ class BERTScorer:
         Args:
 
         """
-        if self.idf_dict is not None:
+        if self._idf_dict is not None:
             warnings.warn("Overwriting the previous importance weights.")
 
-        self.idf_dict = get_idf_dict(sents, self.tokenizer, nthreads=self.nthreads)
+        self._idf_dict = get_idf_dict(sents, self._tokenizer, nthreads=self.nthreads)
 
     def score(self, cands, refs, verbose=False, batch_size=64, return_hash=False):
         """
@@ -144,14 +169,14 @@ class BERTScorer:
             start = time.perf_counter()
 
         if self.idf:
-            assert self.idf_dict, "IDF weights are not computed"
-            idf_dict = self.idf_dict
+            assert self._idf_dict, "IDF weights are not computed"
+            idf_dict = self._idf_dict
         else:
             idf_dict = defaultdict(lambda: 1.)
-            idf_dict[self.tokenizer.sep_token_id] = 0
-            idf_dict[self.tokenizer.cls_token_id] = 0
+            idf_dict[self._tokenizer.sep_token_id] = 0
+            idf_dict[self._tokenizer.cls_token_id] = 0
 
-        all_preds = bert_cos_score_idf(self.model, refs, cands, self.tokenizer, idf_dict,
+        all_preds = bert_cos_score_idf(self._model, refs, cands, self._tokenizer, idf_dict,
                                        verbose=verbose, device=self.device,
                                        batch_size=batch_size, all_layers=self.all_layers).cpu()
 
@@ -187,20 +212,20 @@ class BERTScorer:
         assert isinstance(reference, str)
         
         idf_dict = defaultdict(lambda: 1.)
-        idf_dict[self.tokenizer.sep_token_id] = 0
-        idf_dict[self.tokenizer.cls_token_id] = 0
+        idf_dict[self._tokenizer.sep_token_id] = 0
+        idf_dict[self._tokenizer.cls_token_id] = 0
 
-        hyp_embedding, masks, padded_idf = get_bert_embedding([candidate], self.model, self.tokenizer, idf_dict,
+        hyp_embedding, masks, padded_idf = get_bert_embedding([candidate], self._model, self._tokenizer, idf_dict,
                                                              device=self.device, all_layers=False)
-        ref_embedding, masks, padded_idf = get_bert_embedding([reference], self.model, self.tokenizer, idf_dict,
+        ref_embedding, masks, padded_idf = get_bert_embedding([reference], self._model, self._tokenizer, idf_dict,
                                                              device=self.device, all_layers=False)
         ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
         hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
         sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
         sim = sim.squeeze(0).cpu()
 
-        r_tokens = [self.tokenizer.decode([i]) for i in sent_encode(self.tokenizer, reference)][1:-1]
-        h_tokens = [self.tokenizer.decode([i]) for i in sent_encode(self.tokenizer, candidate)][1:-1]
+        r_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, reference)][1:-1]
+        h_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, candidate)][1:-1]
         sim = sim[1:-1,1:-1]
 
         if self.rescale_with_baseline:
