@@ -79,6 +79,21 @@ class TestScore(unittest.TestCase):
         self.assertTrue((R - torch.tensor([0.897446095943451,0.820639789104462,0.509167850017548])).abs_().max() < EPS)
         self.assertTrue((F - torch.tensor([0.900772094726562,0.837753534317017,0.442304641008377])).abs_().max() < EPS)
 
+    def test_multi_refs(self):
+        cands = ['I like lemons.']
+        refs = [['I am proud of you.', 'I love lemons.', 'Go go go.']]
+        P_mul, R_mul, F_mul = bert_score.score(
+            cands, refs, batch_size=3, return_hash=False,
+            lang="en", rescale_with_baseline=True
+        )
+        P_best, R_best, F_best = bert_score.score(
+            cands, [refs[0][1]], batch_size=3, return_hash=False,
+            lang="en", rescale_with_baseline=True
+        )
+        self.assertTrue((P_mul - P_best).abs_().max() < EPS)
+        self.assertTrue((R_mul - R_best).abs_().max() < EPS)
+        self.assertTrue((F_mul - F_best).abs_().max() < EPS)
+
 
 if __name__ == '__main__':
     unittest.main()
