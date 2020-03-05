@@ -20,8 +20,8 @@ from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
 __all__ = ['score', 'plot_example']
 
 def score(cands, refs, model_type=None, num_layers=None, verbose=False, 
-          idf=False, device=None, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False, rescale_with_baseline=False):
+          idf=False, device=None, batch_size=64, nthreads=4, all_layers=False, 
+          lang=None, return_hash=False, rescale_with_baseline=False):
     """
     BERTScore metric.
 
@@ -48,7 +48,9 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
                   candidate reference pairs. if returning hashcode, the
-                  output will be ((P, R, F), hashcode).
+                  output will be ((P, R, F), hashcode). If a candidate have 
+                  multiple references, the returned score of this candidate is 
+                  the *best* score among all references.
     """
     assert len(cands) == len(refs), "Different number of candidates and references"
 

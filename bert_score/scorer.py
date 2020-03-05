@@ -150,6 +150,13 @@ class BERTScorer:
         Args:
             - :param: `cands` (list of str): candidate sentences
             - :param: `refs` (list of str or list of list of str): reference sentences
+
+        Return:
+            - :param: `(P, R, F)`: each is of shape (N); N = number of input
+                      candidate reference pairs. if returning hashcode, the
+                      output will be ((P, R, F), hashcode). If a candidate have 
+                      multiple references, the returned score of this candidate is 
+                      the *best* score among all references.
         """
 
         ref_group_boundaries = None
