@@ -4,6 +4,7 @@ import time
 import pathlib
 import torch
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 
@@ -18,15 +19,15 @@ from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
 
 __all__ = ['score', 'plot_example']
 
-def score(cands, refs, model_type=None, num_layers=None, verbose=False,
-          idf=False, batch_size=64, nthreads=4, all_layers=False, lang=None,
-          return_hash=False, rescale_with_baseline=False):
+def score(cands, refs, model_type=None, num_layers=None, verbose=False, 
+          idf=False, device=None, batch_size=64, nthreads=4, all_layers=False, 
+          lang=None, return_hash=False, rescale_with_baseline=False):
     """
     BERTScore metric.
 
     Args:
         - :param: `cands` (list of str): candidate sentences
-        - :param: `refs` (list of str): reference sentences
+        - :param: `refs` (list of str or list of list of str): reference sentences
         - :param: `model_type` (str): bert specification, default using the suggested
                   model for the target langauge; has to specify at least one of
                   `model_type` or `lang`
@@ -34,6 +35,9 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
                   default using the number of layer tuned on WMT16 correlation data
         - :param: `verbose` (bool): turn on intermediate status update
         - :param: `idf` (bool or dict): use idf weighting, can also be a precomputed idf_dict
+        - :param: `device` (str): on which the contextual embedding model will be allocated on.
+                  If this argument is None, the model lives on cuda:0 if cuda is available.
+        - :param: `nthreads` (int): number of threads
         - :param: `batch_size` (int): bert score processing batch size
         - :param: `lang` (str): language of the sentences; has to specify
                   at least one of `model_type` or `lang`. `lang` needs to be
@@ -44,12 +48,26 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
                   candidate reference pairs. if returning hashcode, the
-                  output will be ((P, R, F), hashcode).
+                  output will be ((P, R, F), hashcode). If a candidate have 
+                  multiple references, the returned score of this candidate is 
+                  the *best* score among all references.
     """
     assert len(cands) == len(refs), "Different number of candidates and references"
 
     assert lang is not None or model_type is not None, \
         'Either lang or model_type should be specified'
+
+    ref_group_boundaries = None
+    if not isinstance(refs[0], str):
+        ref_group_boundaries = []
+        ori_cands, ori_refs = cands, refs
+        cands, refs = [], []
+        count = 0
+        for cand, ref_group in zip(ori_cands, ori_refs):
+            cands += [cand] * len(ref_group)
+            refs += ref_group
+            ref_group_boundaries.append((count, len(ref_group)))
+            count += len(ref_group)
 
     if rescale_with_baseline:
         assert lang is not None, 'Need to specify Language when rescaling with baseline'
@@ -60,11 +78,11 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-
     if model_type.startswith('scibert'):
         tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
     else:
         tokenizer = AutoTokenizer.from_pretrained(model_type)
+
     model = get_model(model_type, num_layers, all_layers)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model.to(device)
@@ -92,6 +110,13 @@ def score(cands, refs, model_type=None, num_layers=None, verbose=False,
     all_preds = bert_cos_score_idf(model, refs, cands, tokenizer, idf_dict,
                                    verbose=verbose, device=device,
                                    batch_size=batch_size, all_layers=all_layers).cpu()
+
+    if ref_group_boundaries is not None:
+        max_preds = []
+        for start, end in ref_group_boundaries:
+            max_preds.append(all_preds[start:end].max(dim=0)[0])
+        all_preds = torch.stack(max_preds, dim=0)
+
     if rescale_with_baseline:
         baseline_path = os.path.join(
             os.path.dirname(__file__),
@@ -199,7 +224,6 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
 
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
     im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
-    fig.colorbar(im, ax=ax)
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(r_tokens)))
@@ -207,9 +231,17 @@ def plot_example(candidate, reference, model_type=None, num_layers=None, lang=No
     # ... and label them with the respective list entries
     ax.set_xticklabels(r_tokens, fontsize=10)
     ax.set_yticklabels(h_tokens, fontsize=10)
+    ax.grid(False)
     plt.xlabel("Reference (tokenized)", fontsize=14)
     plt.ylabel("Candidate (tokenized)", fontsize=14)
-    plt.title("Similarity Matrix", fontsize=14)
+    title = "Similarity Matrix"
+    if rescale_with_baseline:
+        title += " (after Rescaling)"
+    plt.title(title, fontsize=14)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="2%", pad=0.2)
+    fig.colorbar(im, cax=cax)
 
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
