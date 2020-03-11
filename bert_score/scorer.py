@@ -34,7 +34,6 @@ class BERTScorer:
                       `model_type` or `lang`
             - :param: `num_layers` (int): the layer of representation to use.
                       default using the number of layer tuned on WMT16 correlation data
-            - :param: `verbose` (bool): turn on intermediate status update
             - :param: `idf` (dict): use idf weighting, can also be a precomputed idf_dict
             - :param: `idf_sents` (List of str): use idf weighting, can also be a precomputed idf_dict
             - :param: `device` (str): on which the contextual embedding model will be allocated on.
