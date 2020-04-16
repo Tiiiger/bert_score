@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--rescale-with-baseline', action='store_true', help='Rescaling the numerical score with precomputed baselines')
     parser.add_argument('-s', '--seg_level', action='store_true', help='show individual score of each pair')
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
-    parser.add_argument('-r', '--ref', type=str, nargs='+', required=True, help='reference file path or a string')
+    parser.add_argument('-r', '--ref', type=str, nargs='+', required=True, help='reference file path(s) or a string')
     parser.add_argument('-c', '--cand', type=str, required=True, help='candidate (system outputs) file path or a string')
 
     args = parser.parse_args()
