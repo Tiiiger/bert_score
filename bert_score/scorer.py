@@ -168,7 +168,7 @@ class BERTScorer:
             for cand, ref_group in zip(ori_cands, ori_refs):
                 cands += [cand] * len(ref_group)
                 refs += ref_group
-                ref_group_boundaries.append((count, len(ref_group)))
+                ref_group_boundaries.append((count, count + len(ref_group)))
                 count += len(ref_group)
 
         if verbose:
