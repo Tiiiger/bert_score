@@ -25,7 +25,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.2.0
   - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
   - Automatically picking the best model for a given language
-  - Automatically picking the layer based a model
+  - Automatically picking the layer based on a model
   - IDF is *not* set as default as we show in the new version that the improvement brought by importance weighting is not consistent
 
 #### Authors:
