@@ -3,6 +3,9 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- Updated to version 0.3.2
+  - **Bug fixed**: fixing the bug in v0.3.1 when having multiple reference sentences.
+  - Supporting multiple reference sentences with our command line tool.
 - Updated to version 0.3.1
   - A new `BERTScorer` object that caches the model to avoid re-loading it multiple times. Please see our [jupyter notebook example](./example/Demo.ipynb) for the usage.
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
@@ -110,12 +113,18 @@ roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)-rescaled P: 0.747044 R: 
 
 This makes the range of the scores larger and more human-readable. Please see this [post](./journal/rescale_baseline.md) for details.
 
+When having multiple reference sentences, please use
+```sh
+bert-score -r example/refs.txt example/refs2.txt -c example/hyps.txt --lang en
+```
+where the `-r` argument supports an arbitrary number of reference files. Each reference file should have the same number of lines as your candidate/hypothesis file. The i-th line in each reference file corresponds to the i-th line in the candidate file.
+
 
 2. To evaluate text files in other languages:
 
 We currently support the 104 languages in multilingual BERT ([full list](https://github.com/google-research/bert/blob/master/multilingual.md#list-of-languages)).
 
-Please specify the two-letter abbrevation of the language. For instance, using `--lang zh` for Chinese text. 
+Please specify the two-letter abbreviation of the language. For instance, using `--lang zh` for Chinese text. 
 
 See more options by `bert-score -h`.
 
