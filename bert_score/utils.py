@@ -76,13 +76,18 @@ model2layers = {
 
 def sent_encode(tokenizer, sent):
     "Encoding as sentence based on the tokenizer"
+    if (sent.strip() == ""):
+        # print("sent is empty")
+        snt = " "
+    else:
+        snt = sent.strip()
     if isinstance(tokenizer, GPT2Tokenizer):
         # for RoBERTa and GPT-2
-        return tokenizer.encode(sent.strip(), add_special_tokens=True,
+        return tokenizer.encode(snt, add_special_tokens=True,
                                 add_prefix_space=True,
                                 max_length=tokenizer.max_len)
     else:
-        return tokenizer.encode(sent.strip(), add_special_tokens=True,
+        return tokenizer.encode(snt, add_special_tokens=True,
                                 max_length=tokenizer.max_len)
 
 
