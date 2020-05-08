@@ -3,17 +3,20 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- Updated to version 0.3.2
+  - **Bug fixed**: fixing the bug in v0.3.1 when having multiple reference sentences.
+  - Supporting multiple reference sentences with our command line tool.
 - Updated to version 0.3.1
   - A new `BERTScorer` object that caches the model to avoid re-loading it multiple times. Please see our [jupyter notebook example](./example/Demo.ipynb) for the usage.
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
 - Updated to version 0.3.0
-  - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numercial range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguish examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
+  - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numerical range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguishes examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
 - Updated to version 0.2.3
   - Supporting DistilBERT (Sanh et al.), ALBERT (Lan et al.), and XLM-R (Conneau et al.) models.
   - Including the version of huggingface's transformers in the hash code for reproducibility
 - BERTScore gets accepted in ICLR 2020. Please come to our poster in Addis Ababa, Ethiopia!
 - Updated to version 0.2.2
-  - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evalutation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
+  - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evaluation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
   - The best number of layers for DistilRoBERTa is included
   - Supporting loading a custom model
 - Updated to version 0.2.1
@@ -22,7 +25,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.2.0
   - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
   - Automatically picking the best model for a given language
-  - Automatically picking the layer based a model
+  - Automatically picking the layer based on a model
   - IDF is *not* set as default as we show in the new version that the improvement brought by importance weighting is not consistent
 
 #### Authors:
@@ -37,7 +40,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 ### Overview
 BERTScore leverages the pre-trained contextual embeddings from BERT and matches
 words in candidate and reference sentences by cosine similarity.
-It has been shown to correlate with human judgment on setence-level and
+It has been shown to correlate with human judgment on sentence-level and
 system-level evaluation.
 Moreover, BERTScore computes precision, recall, and F1 measure, which can be
 useful for evaluating different language generation tasks.
@@ -110,12 +113,18 @@ roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)-rescaled P: 0.747044 R: 
 
 This makes the range of the scores larger and more human-readable. Please see this [post](./journal/rescale_baseline.md) for details.
 
+When having multiple reference sentences, please use
+```sh
+bert-score -r example/refs.txt example/refs2.txt -c example/hyps.txt --lang en
+```
+where the `-r` argument supports an arbitrary number of reference files. Each reference file should have the same number of lines as your candidate/hypothesis file. The i-th line in each reference file corresponds to the i-th line in the candidate file.
+
 
 2. To evaluate text files in other languages:
 
 We currently support the 104 languages in multilingual BERT ([full list](https://github.com/google-research/bert/blob/master/multilingual.md#list-of-languages)).
 
-Please specify the two-letter abbrevation of the language. For instance, using `--lang zh` for Chinese text. 
+Please specify the two-letter abbreviation of the language. For instance, using `--lang zh` for Chinese text. 
 
 See more options by `bert-score -h`.
 

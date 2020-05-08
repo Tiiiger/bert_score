@@ -21,21 +21,26 @@ def main():
     parser.add_argument('--rescale-with-baseline', action='store_true', help='Rescaling the numerical score with precomputed baselines')
     parser.add_argument('-s', '--seg_level', action='store_true', help='show individual score of each pair')
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
-    parser.add_argument('-r', '--ref', type=str, required=True, help='reference file path or a string')
+    parser.add_argument('-r', '--ref', type=str, nargs='+', required=True, help='reference file path(s) or a string')
     parser.add_argument('-c', '--cand', type=str, required=True, help='candidate (system outputs) file path or a string')
 
     args = parser.parse_args()
 
-    if os.path.isfile(args.cand) and os.path.isfile(args.ref):
+    if os.path.isfile(args.cand) and os.path.isfile(args.ref[0]):
         with open(args.cand) as f:
             cands = [line.strip() for line in f]
 
-        with open(args.ref) as f:
-            refs = [line.strip() for line in f]
+        refs = []
+        for ref_file in args.ref:
+            with open(ref_file) as f:
+                curr_ref = [line.strip() for line in f]
+                assert len(curr_ref) == len(cands), f'# of sentences in {ref_file} doesn\'t match the # of candidates'
+                refs.append(curr_ref)
+        refs = list(zip(*refs))
     else:
         cands = [args.cand]
         refs = [args.ref]
-        assert not args.idf, "do not suuport idf mode for a single pair of sentences"
+        assert not args.idf, "do not support idf mode for a single pair of sentences"
 
     all_preds, hash_code = bert_score.score(cands, refs, model_type=args.model, num_layers=args.num_layers,
                                             verbose=args.verbose, idf=args.idf, batch_size=args.batch_size,
