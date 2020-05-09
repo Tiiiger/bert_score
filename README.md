@@ -3,10 +3,11 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
-- To appear in version 0.3.3 (in master branch)
-  - Fixing the bug with empty strings [Issue #47](https://github.com/Tiiiger/bert_score/issues/47).
+- Updated to version 0.3.3
+  - Fixing the bug with empty strings [issue #47](https://github.com/Tiiiger/bert_score/issues/47).
   - Supporting 6 [ELECTRA](https://github.com/google-research/electra) models and 24 smaller [BERT](https://github.com/google-research/bert) models.
-  - A new [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for keeping the performance (i.e., pearson correlation with human judgment) of different models on WMT16 to-English. 
+  - A new [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for keeping the performance (i.e., pearson correlation with human judgment) of different models on WMT16 to-English.
+  - Including the script for tuning the best number of layers of an English pre-trained model on WMT16 to-English data (See the [details](tune_layers)).
 - Updated to version 0.3.2
   - **Bug fixed**: fixing the bug in v0.3.1 when having multiple reference sentences.
   - Supporting multiple reference sentences with our command line tool.
@@ -15,6 +16,8 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
 - Updated to version 0.3.0
   - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numerical range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguishes examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
+
+Please see [release logs](https://github.com/Tiiiger/bert_score/releases) for older updates.
 
 #### Authors:
 * [Tianyi Zhang](https://scholar.google.com/citations?user=OI0HSa0AAAAJ&hl=en)*
@@ -141,7 +144,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 
 #### Practical Tips
 
-* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.2.1`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU).
+* Report the hash code (e.g., `roberta-large_L17_no-idf_version=0.3.0(hug_trans=2.3.0)-rescaled`) in your paper so that people know what setting you use. This is inspired by [sacreBLEU](https://github.com/mjpost/sacreBLEU). Changes in huggingface's transformers version may also affect the score (See [issue #46](https://github.com/Tiiiger/bert_score/issues/46)).
 * Unlike BERT, RoBERTa uses GPT2-style tokenizer which creates addition " " tokens when there are multiple spaces appearing together. It is recommended to remove addition spaces by `sent = re.sub(r' +', ' ', sent)` or `sent = re.sub(r'\s+', ' ', sent)`.
 * Using inverse document frequency (idf) on the reference
   sentences to weigh word importance  may correlate better with human judgment.
@@ -155,7 +158,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 * To use a particular model please set `-m MODEL_TYPE` when using the CLI tool
   or `model_type=MODEL_TYPE` when calling `bert_score.score` function. 
 * We tune layer to use based on WMT16 metric evaluation dataset. You may use a
-  different layer by setting `-l LAYER` or `num_layers=LAYER`
+  different layer by setting `-l LAYER` or `num_layers=LAYER`. To tune the best layer for your custom model, please follow the instructions in [tune_layers](tune_layers) folder.
 * __Limitation__: Because BERT, RoBERTa, and XLM with learned positional embeddings are pre-trained on sentences with max length 512, BERTScore is undefined between sentences longer than 510 (512 after adding \[CLS\] and \[SEP\] tokens). The sentences longer than this will be truncated. Please consider using XLNet which can support much longer inputs.
 
 ### Default Behavior
