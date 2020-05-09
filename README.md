@@ -1,8 +1,12 @@
 # BERTScore
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python) [![PyPI version bert-score](https://badge.fury.io/py/bert-score.svg)](https://pypi.python.org/pypi/bert-score/) [![Downloads](https://pepy.tech/badge/bert-score)](https://pepy.tech/project/bert-score) [![Downloads](https://pepy.tech/badge/bert-score/month)](https://pepy.tech/project/bert-score/month) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python) [![PyPI version bert-score](https://badge.fury.io/py/bert-score.svg)](https://pypi.python.org/pypi/bert-score/) [![Downloads](https://pepy.tech/badge/bert-score)](https://pepy.tech/project/bert-score) [![Downloads](https://pepy.tech/badge/bert-score/month)](https://pepy.tech/project/bert-score/month) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) 
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- To appear in version 0.3.3 (in master branch)
+  - Fixing the bug with empty strings [Issue #47](https://github.com/Tiiiger/bert_score/issues/47).
+  - Supporting 6 [ELECTRA](https://github.com/google-research/electra) models and 24 smaller [BERT](https://github.com/google-research/bert) models.
+  - A new [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for keeping the performance (i.e., pearson correlation with human judgment) of different models on WMT16 to-English. 
 - Updated to version 0.3.2
   - **Bug fixed**: fixing the bug in v0.3.1 when having multiple reference sentences.
   - Supporting multiple reference sentences with our command line tool.
@@ -11,22 +15,6 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
 - Updated to version 0.3.0
   - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numerical range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguishes examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
-- Updated to version 0.2.3
-  - Supporting DistilBERT (Sanh et al.), ALBERT (Lan et al.), and XLM-R (Conneau et al.) models.
-  - Including the version of huggingface's transformers in the hash code for reproducibility
-- BERTScore gets accepted in ICLR 2020. Please come to our poster in Addis Ababa, Ethiopia!
-- Updated to version 0.2.2
-  - **Bug fixed**: when using RoBERTaTokenizer, we now set `add_prefix_space=True` which was the default setting in huggingface's `pytorch_transformers` (when we ran the experiments in the paper) before they migrated it to `transformers`. This breaking change in `transformers` leads to a lower correlation with human evaluation. To reproduce our RoBERTa results in the paper, please use version `0.2.2`.
-  - The best number of layers for DistilRoBERTa is included
-  - Supporting loading a custom model
-- Updated to version 0.2.1
-  - [SciBERT](https://github.com/allenai/scibert) (Beltagy et al.) models are now included. Thanks to AI2 for sharing the models. By default, we use the 9th layer (the same as BERT-base), but this is not tuned. 
-- Our [arXiv paper](https://arxiv.org/abs/1904.09675) has been updated to v2 with more experiments and analysis.
-- Updated to version 0.2.0
-  - Supporting BERT, XLM, XLNet, and RoBERTa models using [huggingface's Transformers library](https://github.com/huggingface/transformers)
-  - Automatically picking the best model for a given language
-  - Automatically picking the layer based on a model
-  - IDF is *not* set as default as we show in the new version that the improvement brought by importance weighting is not consistent
 
 #### Authors:
 * [Tianyi Zhang](https://scholar.google.com/citations?user=OI0HSa0AAAAJ&hl=en)*
@@ -181,43 +169,7 @@ can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8
 | others    | bert-base-multilingual-cased |
 
 #### Default Layers
-| Model                                      | Best Layer | Max Length    |
-|:------------------------------------------:|------------| ------------- |
-| bert-base-uncased                          | 9          | 512           |
-| bert-large-uncased                         | 18         | 512           |
-| bert-base-cased-finetuned-mrpc             | 9          | 512           |
-| bert-base-multilingual-cased               | 9          | 512           |
-| bert-base-chinese                          | 8          | 512           |
-| roberta-base                               | 10         | 512           |
-| roberta-large                              | 17         | 512           |
-| roberta-large-mnli                         | 19         | 512           |
-| roberta-base-openai-detector               | 7          | 512           |
-| roberta-large-openai-detector              | 19         | 512           |
-| xlnet-base-cased                           | 5          | 1000000000000 |
-| xlnet-large-cased                          | 7          | 1000000000000 |
-| xlm-mlm-en-2048                            | 7          | 512           |
-| xlm-mlm-100-1280                           | 11         | 512           |
-| scibert-scivocab-uncased                   | 9*         | 512           |
-| scibert-scivocab-cased                     | 9*         | 512           |
-| scibert-basevocab-uncased                  | 9*         | 512           |
-| scibert-basevocab-cased                    | 9*         | 512           |
-| distilroberta-base                         | 5          | 512           |
-| distilbert-base                            | 5          | 512           |
-| distilbert-base-uncased                    | 5          | 512           |
-| distilbert-base-uncased-distilled-squad    | 4          | 512           |
-| distilbert-base-multilingual-cased         | 5          | 512           |
-| albert-base-v1                             | 10         | 512           |
-| albert-large-v1                            | 17         | 512           |
-| albert-xlarge-v1                           | 16         | 512           |
-| albert-xxlarge-v1                          | 8          | 512           |
-| albert-base-v2                             | 9          | 512           |
-| albert-large-v2                            | 14         | 512           |
-| albert-xlarge-v2                           | 13         | 512           |
-| albert-xxlarge-v2                          | 8          | 512           |
-| xlm-roberta-base                           | 9          | 512           |
-| xlm-roberta-large                          | 17         | 512           |
-
-*: Not tuned
+Please see this [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for the supported models and their performance.
 
 ### Acknowledgement
 This repo wouldn't be possible without the awesome
