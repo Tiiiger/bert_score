@@ -12,10 +12,19 @@ import warnings
 from collections import defaultdict
 from transformers import AutoTokenizer
 
-from .utils import (get_model, get_idf_dict, bert_cos_score_idf,
-                    get_bert_embedding, model_types,
-                    lang2model, model2layers, get_hash,
-                    cache_scibert, sent_encode)
+from .utils import (
+    get_model,
+    get_idf_dict,
+    bert_cos_score_idf,
+    get_bert_embedding,
+    model_types,
+    lang2model,
+    model2layers,
+    get_hash,
+    cache_scibert,
+    sent_encode,
+)
+
 
 class BERTScorer:
     """
@@ -23,9 +32,17 @@ class BERTScorer:
     """
 
     def __init__(
-        self, model_type=None, num_layers=None, batch_size=64, nthreads=4, 
-        all_layers=False, idf=False, idf_sents=None, device=None,
-        lang=None, rescale_with_baseline=False,
+        self,
+        model_type=None,
+        num_layers=None,
+        batch_size=64,
+        nthreads=4,
+        all_layers=False,
+        idf=False,
+        idf_sents=None,
+        device=None,
+        lang=None,
+        rescale_with_baseline=False,
     ):
         """
         Args:
@@ -48,14 +65,13 @@ class BERTScorer:
             - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
         """
 
-        assert lang is not None or model_type is not None, \
-            'Either lang or model_type should be specified'
+        assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
 
         if rescale_with_baseline:
-            assert lang is not None, 'Need to specify Language when rescaling with baseline'
+            assert lang is not None, "Need to specify Language when rescaling with baseline"
 
         if device is None:
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
             self.device = device
 
@@ -79,7 +95,7 @@ class BERTScorer:
 
         # Building model and tokenizer
 
-        if self.model_type.startswith('scibert'):
+        if self.model_type.startswith("scibert"):
             self._tokenizer = AutoTokenizer.from_pretrained(cache_scibert(self.model_type))
         else:
             self._tokenizer = AutoTokenizer.from_pretrained(self.model_type)
@@ -113,21 +129,16 @@ class BERTScorer:
 
     @property
     def baseline_vals(self):
-        baseline_path = os.path.join(
-            os.path.dirname(__file__),
-            f'rescale_baseline/{self.lang}/{self.model_type}.tsv'
-        )
+        baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv")
         if os.path.isfile(baseline_path):
             if not self.all_layers:
-                baseline_vals = torch.from_numpy(
-                    pd.read_csv(baseline_path).iloc[self.num_layers].to_numpy()
-                )[1:].float()
+                baseline_vals = torch.from_numpy(pd.read_csv(baseline_path).iloc[self.num_layers].to_numpy())[
+                    1:
+                ].float()
             else:
-                baseline_vals = torch.from_numpy(
-                    pd.read_csv(baseline_path).to_numpy()
-                )[:, 1:].unsqueeze(1).float()
+                baseline_vals = torch.from_numpy(pd.read_csv(baseline_path).to_numpy())[:, 1:].unsqueeze(1).float()
         else:
-            raise ValueError(f'Baseline not Found for {self.model_type} on {self.lang} at {baseline_path}')
+            raise ValueError(f"Baseline not Found for {self.model_type} on {self.lang} at {baseline_path}")
 
         return baseline_vals
 
@@ -172,20 +183,28 @@ class BERTScorer:
                 count += len(ref_group)
 
         if verbose:
-            print('calculating scores...')
+            print("calculating scores...")
             start = time.perf_counter()
 
         if self.idf:
             assert self._idf_dict, "IDF weights are not computed"
             idf_dict = self._idf_dict
         else:
-            idf_dict = defaultdict(lambda: 1.)
+            idf_dict = defaultdict(lambda: 1.0)
             idf_dict[self._tokenizer.sep_token_id] = 0
             idf_dict[self._tokenizer.cls_token_id] = 0
 
-        all_preds = bert_cos_score_idf(self._model, refs, cands, self._tokenizer, idf_dict,
-                                       verbose=verbose, device=self.device,
-                                       batch_size=batch_size, all_layers=self.all_layers).cpu()
+        all_preds = bert_cos_score_idf(
+            self._model,
+            refs,
+            cands,
+            self._tokenizer,
+            idf_dict,
+            verbose=verbose,
+            device=self.device,
+            batch_size=batch_size,
+            all_layers=self.all_layers,
+        ).cpu()
 
         if ref_group_boundaries is not None:
             max_preds = []
@@ -196,11 +215,11 @@ class BERTScorer:
         if self.rescale_with_baseline:
             all_preds = (all_preds - self.baseline_vals) / (1 - self.baseline_vals)
 
-        out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2] # P, R, F
+        out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
 
         if verbose:
             time_diff = time.perf_counter() - start
-            print(f'done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec')
+            print(f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec")
 
         if return_hash:
             out = tuple([out, self.hash])
@@ -217,15 +236,17 @@ class BERTScorer:
 
         assert isinstance(candidate, str)
         assert isinstance(reference, str)
-        
-        idf_dict = defaultdict(lambda: 1.)
+
+        idf_dict = defaultdict(lambda: 1.0)
         idf_dict[self._tokenizer.sep_token_id] = 0
         idf_dict[self._tokenizer.cls_token_id] = 0
 
-        hyp_embedding, masks, padded_idf = get_bert_embedding([candidate], self._model, self._tokenizer, idf_dict,
-                                                             device=self.device, all_layers=False)
-        ref_embedding, masks, padded_idf = get_bert_embedding([reference], self._model, self._tokenizer, idf_dict,
-                                                             device=self.device, all_layers=False)
+        hyp_embedding, masks, padded_idf = get_bert_embedding(
+            [candidate], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False
+        )
+        ref_embedding, masks, padded_idf = get_bert_embedding(
+            [reference], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False
+        )
         ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
         hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
         sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
@@ -233,13 +254,13 @@ class BERTScorer:
 
         r_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, reference)][1:-1]
         h_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, candidate)][1:-1]
-        sim = sim[1:-1,1:-1]
+        sim = sim[1:-1, 1:-1]
 
         if self.rescale_with_baseline:
             sim = (sim - self.baseline_vals[2].item()) / (1 - self.baseline_vals[2].item())
 
         fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
-        im = ax.imshow(sim, cmap='Blues', vmin=0, vmax=1)
+        im = ax.imshow(sim, cmap="Blues", vmin=0, vmax=1)
 
         # We want to show all ticks...
         ax.set_xticks(np.arange(len(r_tokens)))
@@ -260,14 +281,19 @@ class BERTScorer:
         fig.colorbar(im, cax=cax)
 
         # Rotate the tick labels and set their alignment.
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-                 rotation_mode="anchor")
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
         # Loop over data dimensions and create text annotations.
         for i in range(len(h_tokens)):
             for j in range(len(r_tokens)):
-                text = ax.text(j, i, '{:.3f}'.format(sim[i, j].item()),
-                               ha="center", va="center", color="k" if sim[i, j].item() < 0.5 else "w")
+                text = ax.text(
+                    j,
+                    i,
+                    "{:.3f}".format(sim[i, j].item()),
+                    ha="center",
+                    va="center",
+                    color="k" if sim[i, j].item() < 0.5 else "w",
+                )
 
         fig.tight_layout()
         if fname != "":
@@ -276,7 +302,7 @@ class BERTScorer:
         plt.show()
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(hash={self.hash}, batch_size={self.batch_size}, nthreads={self.nthreads})'
+        return f"{self.__class__.__name__}(hash={self.hash}, batch_size={self.batch_size}, nthreads={self.nthreads})"
 
     def __str__(self):
         return self.__repr__()
