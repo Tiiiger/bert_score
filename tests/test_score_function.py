@@ -95,13 +95,14 @@ class TestScore(unittest.TestCase):
         self.assertTrue((F_mul - F_best).abs_().max() < EPS)
         
     def test_multi_refs_working(self):
-        cands = ['I like lemons.', 'Hi', 'Hey', 'Hello', 'Go']
+        cands = ['I like lemons.', 'Hi', 'Hey', 'Hello', 'Go', '']
         refs = [
             ['I am proud of you.', 'I love lemons.', 'Go go go.'],
             ['I am proud of you.', 'Go go go.'],
-            ['Hi'],
+            ['Hi', ''],
             ['I am proud of you.', 'I love lemons.', 'Go go go.', 'hello'],
             ['I am proud of you.', 'Go go go.', 'Go', 'Go to school'],
+            ['test'],
         ]
         P_mul, R_mul, F_mul = bert_score.score(
             cands, refs, batch_size=3, return_hash=False,

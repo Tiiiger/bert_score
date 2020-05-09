@@ -84,13 +84,14 @@ class TestScore(unittest.TestCase):
     def test_multi_refs_working(self):
         scorer = bert_score.BERTScorer(lang="en", batch_size=3, rescale_with_baseline=True)
 
-        cands = ['I like lemons.', 'Hi', 'Hey', 'Hello', 'Go']
+        cands = ['I like lemons.', 'Hi', 'Hey', 'Hello', 'Go', '']
         refs = [
             ['I am proud of you.', 'I love lemons.', 'Go go go.'],
             ['I am proud of you.', 'Go go go.'],
-            ['Hi'],
+            ['Hi', ''],
             ['I am proud of you.', 'I love lemons.', 'Go go go.', 'hello'],
             ['I am proud of you.', 'Go go go.', 'Go', 'Go to school'],
+            ['test'],
         ]
         P_mul, R_mul, F_mul = scorer.score(
             cands, refs, 
