@@ -104,7 +104,8 @@ def score(
         tokenizer = AutoTokenizer.from_pretrained(model_type)
 
     model = get_model(model_type, num_layers, all_layers)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
     if not idf:
