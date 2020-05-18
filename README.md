@@ -36,7 +36,7 @@ system-level evaluation.
 Moreover, BERTScore computes precision, recall, and F1 measure, which can be
 useful for evaluating different language generation tasks.
 
-For an illustration, BERTScore precision can be computed as
+For an illustration, BERTScore recall can be computed as
 ![](./bert_score.png "BERTScore")
 
 If you find this repo useful, please cite:
