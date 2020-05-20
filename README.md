@@ -3,6 +3,7 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- [Huggingface's nlp](https://github.com/huggingface/nlp) library includes BERTScore in their metric collection.
 - Updated to version 0.3.3
   - Fixing the bug with empty strings [issue #47](https://github.com/Tiiiger/bert_score/issues/47).
   - Supporting 6 [ELECTRA](https://github.com/google-research/electra) models and 24 smaller [BERT](https://github.com/google-research/bert) models.
