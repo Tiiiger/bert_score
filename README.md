@@ -3,6 +3,7 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- For people in China, downloading pre-trained weights can be very slow. We provide a copy of RoBERTa-large on Baidu Pan. Here is the [link](https://pan.baidu.com/s/1MTmGHsZ3ubn7Vr_W-wyEdQ) and the password is `dhe5`.  
 - [Huggingface's nlp](https://github.com/huggingface/nlp) library includes BERTScore in their metric collection.
 - Updated to version 0.3.3
   - Fixing the bug with empty strings [issue #47](https://github.com/Tiiiger/bert_score/issues/47).
