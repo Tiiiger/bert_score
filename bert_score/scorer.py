@@ -17,7 +17,6 @@ from .utils import (
     get_idf_dict,
     bert_cos_score_idf,
     get_bert_embedding,
-    model_types,
     lang2model,
     model2layers,
     get_hash,
