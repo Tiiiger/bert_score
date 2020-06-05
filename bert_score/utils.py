@@ -15,7 +15,7 @@ from transformers import AutoModel, GPT2Tokenizer
 from . import __version__
 from transformers import __version__ as trans_version
 
-__all__ = ["model_types"]
+__all__ = []
 
 SCIBERT_URL_DICT = {
     "scibert-scivocab-uncased": "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_scivocab_uncased.tar",  # recommend by the SciBERT authors
@@ -24,13 +24,6 @@ SCIBERT_URL_DICT = {
     "scibert-basevocab-cased": "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_basevocab_cased.tar",
 }
 
-model_types = (
-    list(BertConfig.pretrained_config_archive_map.keys())
-    + list(XLNetConfig.pretrained_config_archive_map.keys())
-    + list(RobertaConfig.pretrained_config_archive_map.keys())
-    + list(XLMConfig.pretrained_config_archive_map.keys())
-    + list(SCIBERT_URL_DICT.keys())
-)
 
 lang2model = defaultdict(lambda: "bert-base-multilingual-cased")
 lang2model.update(
