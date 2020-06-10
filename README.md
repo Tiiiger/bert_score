@@ -3,6 +3,8 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- Updated to version 0.3.4
+  - Compatible with transformers v2.11.0 now (#58)
 - For people in China, downloading pre-trained weights can be very slow. We provide copies of a few models on Baidu Pan.
   - [roberta-large](https://pan.baidu.com/s/1MTmGHsZ3ubn7Vr_W-wyEdQ) password: dhe5
   - [bert-base-chinese](https://pan.baidu.com/s/1THfiCXjWtdGGsCMskQ5svA) password: jvk7
@@ -19,8 +21,6 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.3.1
   - A new `BERTScorer` object that caches the model to avoid re-loading it multiple times. Please see our [jupyter notebook example](./example/Demo.ipynb) for the usage.
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
-- Updated to version 0.3.0
-  - Supporting *Baseline Rescaling*: we apply a simple linear transformation to enhance the readability of BERTscore using pre-computed "baselines". It has been pointed out (e.g. by #20, #23) that the numerical range of BERTScore is exceedingly small when computed with RoBERTa models. In other words, although BERTScore correctly distinguishes examples through ranking, the numerical scores of good and bad examples are very similar. We detail our approach in [a separate post](./journal/rescale_baseline.md).
 
 Please see [release logs](https://github.com/Tiiiger/bert_score/releases) for older updates.
 
