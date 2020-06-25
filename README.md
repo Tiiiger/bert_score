@@ -82,6 +82,18 @@ python -m unittest discover
 
 ### Usage
 
+
+#### Python Function
+
+On a high level, we provide a python function `bert_score.score` and a python object `bert_score.BERTScorer`.
+The function provides all the supported features while the scorer object caches the BERT model to faciliate multiple evaluations.
+Check our [demo](./example/Demo.ipynb) to see how to use these two interfaces. 
+Please refer to [`bert_score/score.py`](./bert_score/score.py) for implementation details.
+
+Running BERTScore can be computationally intensive (because it uses BERT :p).
+Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
+can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
+
 #### Command Line Interface (CLI)
 We provide a command line interface (CLI) of BERTScore as well as a python module. 
 For the CLI, you can use it as follows:
@@ -137,14 +149,6 @@ bert-score -r example/refs.txt -c example/hyps.txt --model path_to_my_bert --num
 bert-score-show --lang en -r "There are two bananas on the table." -c "On the table are two apples." -f out.png
 ```
 The figure will be saved to out.png.
-
-#### Python Function
-For the python module, we provide a [demo](./example/Demo.ipynb). 
-Please refer to [`bert_score/score.py`](./bert_score/score.py) for more details.
-
-Running BERTScore can be computationally intensive (because it uses BERT :p).
-Therefore, a GPU is usually necessary. If you don't have access to a GPU, you
-can try our [demo on Google Colab](https://colab.research.google.com/drive/1kpL8Y_AnUUiCxFjhxSrxCsc6-sDMNb_Q)
 
 
 #### Practical Tips
