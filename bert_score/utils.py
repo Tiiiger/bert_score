@@ -368,7 +368,7 @@ def bert_cos_score_idf(
     preds = []
 
     def dedup_and_sort(l):
-        return sorted(list(set(l)), key=lambda x: len(x.split(" ")))
+        return sorted(list(set(l)), key=lambda x: len(x.split(" ")), reverse=True)
 
     sentences = dedup_and_sort(refs + hyps)
     embs = []
