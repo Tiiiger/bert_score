@@ -35,17 +35,20 @@ def main():
 
     args = parser.parse_args()
 
-    if os.path.isfile(args.cand) and os.path.isfile(args.ref[0]):
+    if os.path.isfile(args.cand):
         with open(args.cand) as f:
             cands = [line.strip() for line in f]
 
         refs = []
         for ref_file in args.ref:
+            assert os.path.exists(ref_file), f"reference file {ref_file} doesn't exist"
             with open(ref_file) as f:
                 curr_ref = [line.strip() for line in f]
                 assert len(curr_ref) == len(cands), f"# of sentences in {ref_file} doesn't match the # of candidates"
                 refs.append(curr_ref)
         refs = list(zip(*refs))
+    elif os.path.isfile(args.ref[0]):
+        assert os.path.exists(args.cand), f"candidate file {args.cand} doesn't exist"
     else:
         cands = [args.cand]
         refs = [args.ref]
