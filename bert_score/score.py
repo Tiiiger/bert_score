@@ -141,8 +141,8 @@ def score(
 
     if ref_group_boundaries is not None:
         max_preds = []
-        for start, end in ref_group_boundaries:
-            max_preds.append(all_preds[start:end].max(dim=0)[0])
+        for beg, end in ref_group_boundaries:
+            max_preds.append(all_preds[beg:end].max(dim=0)[0])
         all_preds = torch.stack(max_preds, dim=0)
 
     if rescale_with_baseline:
