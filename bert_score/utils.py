@@ -419,16 +419,15 @@ def bert_cos_score_idf(
         return emb_pad, pad_mask, idf_pad
 
     device = next(model.parameters()).device
-    matching_batch_size = batch_size * 2
-    iter_range = range(0, len(refs), matching_batch_size)
+    iter_range = range(0, len(refs), batch_size)
     if verbose:
         print("computing greedy matching.")
         iter_range = tqdm(iter_range)
 
     with torch.no_grad():
         for batch_start in iter_range:
-            batch_refs = refs[batch_start : batch_start + matching_batch_size]
-            batch_hyps = hyps[batch_start : batch_start + matching_batch_size]
+            batch_refs = refs[batch_start : batch_start + batch_size]
+            batch_hyps = hyps[batch_start : batch_start + batch_size]
             ref_stats = pad_batch_stats(batch_refs, stats_dict, device)
             hyp_stats = pad_batch_stats(batch_hyps, stats_dict, device)
 
