@@ -20,7 +20,7 @@ setup(
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
-                      'transformers>=2.2.0'
+                      'transformers>=3.0.0'
                       ],
     entry_points={
         'console_scripts': [
