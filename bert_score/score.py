@@ -41,6 +41,7 @@ def score(
     lang=None,
     return_hash=False,
     rescale_with_baseline=False,
+    baseline_path=None,
 ):
     """
     BERTScore metric.
@@ -64,6 +65,7 @@ def score(
                   specified when `rescale_with_baseline` is True.
         - :param: `return_hash` (bool): return hash code of the setting
         - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
+        - :param: `baseline_path` (str): customized baseline file
 
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
@@ -145,8 +147,10 @@ def score(
             max_preds.append(all_preds[beg:end].max(dim=0)[0])
         all_preds = torch.stack(max_preds, dim=0)
 
+    use_custom_baseline = baseline_path is not None
     if rescale_with_baseline:
-        baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
+        if baseline_path is None:
+            baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
         if os.path.isfile(baseline_path):
             if not all_layers:
                 baselines = torch.from_numpy(pd.read_csv(baseline_path).iloc[num_layers].to_numpy())[1:].float()
@@ -164,7 +168,8 @@ def score(
         print(f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec")
 
     if return_hash:
-        return tuple([out, get_hash(model_type, num_layers, idf, rescale_with_baseline)])
+        return tuple([out, get_hash(model_type, num_layers, idf, rescale_with_baseline,
+                                    use_custom_baseline=use_custom_baseline)])
 
     return out
 
