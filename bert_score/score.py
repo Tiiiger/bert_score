@@ -175,7 +175,8 @@ def score(
 
 
 def plot_example(
-    candidate, reference, model_type=None, num_layers=None, lang=None, rescale_with_baseline=False, fname=""
+    candidate, reference, model_type=None, num_layers=None, lang=None, rescale_with_baseline=False,
+    baseline_path=None, fname="",
 ):
     """
     BERTScore metric.
@@ -239,7 +240,8 @@ def plot_example(
     sim = sim[1:-1, 1:-1]
 
     if rescale_with_baseline:
-        baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
+        if baseline_path is None:
+            baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
         if os.path.isfile(baseline_path):
             baselines = torch.from_numpy(pd.read_csv(baseline_path).iloc[num_layers].to_numpy())[1:].float()
             sim = (sim - baselines[2].item()) / (1 - baselines[2].item())

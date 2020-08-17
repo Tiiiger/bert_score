@@ -48,7 +48,7 @@ out = bert_score.score(
 and for the command-line version:
 ```bash
 bert-score -r example/refs.txt -c example/hyps.txt \
-           --lang en --rescale-with-baseline
+           --lang en --rescale_with_baseline
 ```
 
 

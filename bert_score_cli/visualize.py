@@ -20,8 +20,9 @@ def main():
     parser.add_argument("-c", "--cand", type=str, required=True, help="candidate sentence")
     parser.add_argument("-f", "--file", type=str, default="visualize.png", help="name of file to save output matrix in")
     parser.add_argument(
-        "--rescale-with-baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
+        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
     )
+    parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
 
     args = parser.parse_args()
 
@@ -33,6 +34,7 @@ def main():
         num_layers=args.num_layers,
         fname=args.file,
         rescale_with_baseline=args.rescale_with_baseline,
+        baseline_path=args.baseline_path,
     )
 
 

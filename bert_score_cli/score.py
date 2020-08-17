@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--nthreads", type=int, default=4, help="number of cpu workers (default: 4)")
     parser.add_argument("--idf", action="store_true", help="BERT Score with IDF scaling")
     parser.add_argument(
-        "--rescale-with-baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
+        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
     )
     parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
     parser.add_argument("-s", "--seg_level", action="store_true", help="show individual score of each pair")
