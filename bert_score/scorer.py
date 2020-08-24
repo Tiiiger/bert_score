@@ -52,8 +52,8 @@ class BERTScorer:
             - :param: `num_layers` (int): the layer of representation to use.
                       default using the number of layer tuned on WMT16 correlation data
             - :param: `verbose` (bool): turn on intermediate status update
-            - :param: `idf` (dict): use idf weighting, can also be a precomputed idf_dict
-            - :param: `idf_sents` (List of str): use idf weighting, can also be a precomputed idf_dict
+            - :param: `idf` (bool): a booling to specify whether to use idf or not (this should be True even if `idf_sents` is given)
+            - :param: `idf_sents` (List of str): list of sentences used to compute the idf weights
             - :param: `device` (str): on which the contextual embedding model will be allocated on.
                       If this argument is None, the model lives on cuda:0 if cuda is available.
             - :param: `batch_size` (int): bert score processing batch size
