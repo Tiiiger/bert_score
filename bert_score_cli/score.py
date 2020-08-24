@@ -24,8 +24,9 @@ def main():
     parser.add_argument("--nthreads", type=int, default=4, help="number of cpu workers (default: 4)")
     parser.add_argument("--idf", action="store_true", help="BERT Score with IDF scaling")
     parser.add_argument(
-        "--rescale-with-baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
+        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
     )
+    parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
     parser.add_argument("-s", "--seg_level", action="store_true", help="show individual score of each pair")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-r", "--ref", type=str, nargs="+", required=True, help="reference file path(s) or a string")
@@ -65,6 +66,7 @@ def main():
         lang=args.lang,
         return_hash=True,
         rescale_with_baseline=args.rescale_with_baseline,
+        baseline_path=args.baseline_path,
     )
     avg_scores = [s.mean(dim=0) for s in all_preds]
     P = avg_scores[0].cpu().item()

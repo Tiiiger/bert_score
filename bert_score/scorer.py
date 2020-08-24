@@ -42,6 +42,7 @@ class BERTScorer:
         device=None,
         lang=None,
         rescale_with_baseline=False,
+        baseline_path=None,
     ):
         """
         Args:
@@ -51,8 +52,8 @@ class BERTScorer:
             - :param: `num_layers` (int): the layer of representation to use.
                       default using the number of layer tuned on WMT16 correlation data
             - :param: `verbose` (bool): turn on intermediate status update
-            - :param: `idf` (dict): use idf weighting, can also be a precomputed idf_dict
-            - :param: `idf_sents` (List of str): use idf weighting, can also be a precomputed idf_dict
+            - :param: `idf` (bool): a booling to specify whether to use idf or not (this should be True even if `idf_sents` is given)
+            - :param: `idf_sents` (List of str): list of sentences used to compute the idf weights
             - :param: `device` (str): on which the contextual embedding model will be allocated on.
                       If this argument is None, the model lives on cuda:0 if cuda is available.
             - :param: `batch_size` (int): bert score processing batch size
@@ -62,6 +63,7 @@ class BERTScorer:
                       specified when `rescale_with_baseline` is True.
             - :param: `return_hash` (bool): return hash code of the setting
             - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
+            - :param: `baseline_path` (str): customized baseline file
         """
 
         assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
@@ -106,6 +108,12 @@ class BERTScorer:
         if idf_sents is not None:
             self.compute_idf(idf_sents)
 
+        self._baseline_vals = None
+        self.baseline_path = baseline_path
+        self.use_custom_baseline = self.baseline_path is not None
+        if self.baseline_path is None:
+            self.baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv")
+
     @property
     def lang(self):
         return self._lang
@@ -128,22 +136,25 @@ class BERTScorer:
 
     @property
     def baseline_vals(self):
-        baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv")
-        if os.path.isfile(baseline_path):
-            if not self.all_layers:
-                baseline_vals = torch.from_numpy(pd.read_csv(baseline_path).iloc[self.num_layers].to_numpy())[
-                    1:
-                ].float()
+        if self._baseline_vals is None:
+            if os.path.isfile(self.baseline_path):
+                if not self.all_layers:
+                    self._baseline_vals = torch.from_numpy(
+                        pd.read_csv(self.baseline_path).iloc[self.num_layers].to_numpy()
+                    )[1:].float()
+                else:
+                    self._baseline_vals = torch.from_numpy(
+                        pd.read_csv(self.baseline_path).to_numpy()
+                    )[:, 1:].unsqueeze(1).float()
             else:
-                baseline_vals = torch.from_numpy(pd.read_csv(baseline_path).to_numpy())[:, 1:].unsqueeze(1).float()
-        else:
-            raise ValueError(f"Baseline not Found for {self.model_type} on {self.lang} at {baseline_path}")
+                raise ValueError(
+                    f"Baseline not Found for {self.model_type} on {self.lang} at {self.baseline_path}")
 
-        return baseline_vals
+        return self._baseline_vals
 
     @property
     def hash(self):
-        return get_hash(self.model_type, self.num_layers, self.idf, self.rescale_with_baseline)
+        return get_hash(self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline)
 
     def compute_idf(self, sents):
         """
