@@ -112,7 +112,9 @@ class BERTScorer:
         self.baseline_path = baseline_path
         self.use_custom_baseline = self.baseline_path is not None
         if self.baseline_path is None:
-            self.baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv")
+            self.baseline_path = os.path.join(
+                os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv"
+            )
 
     @property
     def lang(self):
@@ -143,18 +145,19 @@ class BERTScorer:
                         pd.read_csv(self.baseline_path).iloc[self.num_layers].to_numpy()
                     )[1:].float()
                 else:
-                    self._baseline_vals = torch.from_numpy(
-                        pd.read_csv(self.baseline_path).to_numpy()
-                    )[:, 1:].unsqueeze(1).float()
+                    self._baseline_vals = (
+                        torch.from_numpy(pd.read_csv(self.baseline_path).to_numpy())[:, 1:].unsqueeze(1).float()
+                    )
             else:
-                raise ValueError(
-                    f"Baseline not Found for {self.model_type} on {self.lang} at {self.baseline_path}")
+                raise ValueError(f"Baseline not Found for {self.model_type} on {self.lang} at {self.baseline_path}")
 
         return self._baseline_vals
 
     @property
     def hash(self):
-        return get_hash(self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline)
+        return get_hash(
+            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline
+        )
 
     def compute_idf(self, sents):
         """

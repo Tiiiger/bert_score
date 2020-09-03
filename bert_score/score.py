@@ -168,15 +168,22 @@ def score(
         print(f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec")
 
     if return_hash:
-        return tuple([out, get_hash(model_type, num_layers, idf, rescale_with_baseline,
-                                    use_custom_baseline=use_custom_baseline)])
+        return tuple(
+            [out, get_hash(model_type, num_layers, idf, rescale_with_baseline, use_custom_baseline=use_custom_baseline)]
+        )
 
     return out
 
 
 def plot_example(
-    candidate, reference, model_type=None, num_layers=None, lang=None, rescale_with_baseline=False,
-    baseline_path=None, fname="",
+    candidate,
+    reference,
+    model_type=None,
+    num_layers=None,
+    lang=None,
+    rescale_with_baseline=False,
+    baseline_path=None,
+    fname="",
 ):
     """
     BERTScore metric.
