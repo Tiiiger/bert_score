@@ -4,7 +4,7 @@
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
 - Updated to version 0.3.6
-  - Support custom baseline files
+  - Support custom baseline files [#74](https://github.com/Tiiiger/bert_score/pull/74)
   - The option `--rescale-with-baseline` is changed to `--rescale_with_baseline` so that it is consistent with other options.
 - Updated to version 0.3.5
   - Being compatible with Huggingface's transformers >=v3.0.0 and minor fixes ([#58](https://github.com/Tiiiger/bert_score/pull/58), [#66](https://github.com/Tiiiger/bert_score/pull/66), [#68](https://github.com/Tiiiger/bert_score/pull/68))
