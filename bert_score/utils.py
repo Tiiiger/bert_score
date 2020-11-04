@@ -295,7 +295,7 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
                    embeddings of reference sentences, BxKxd,
                    B: batch size, K: longest length, d: bert dimenison
         - :param: `ref_lens` (list of int): list of reference sentence length.
-        - :param: `ref_masks` (torch.LongTensor): BxKxK, BERT attention mask for
+        - :param: `ref_masks` (torch.LongTensor): BxK, BERT attention mask for
                    reference sentences.
         - :param: `ref_idf` (torch.Tensor): BxK, idf score of each word
                    piece in the reference setence
@@ -303,7 +303,7 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
                    embeddings of candidate sentences, BxKxd,
                    B: batch size, K: longest length, d: bert dimenison
         - :param: `hyp_lens` (list of int): list of candidate sentence length.
-        - :param: `hyp_masks` (torch.LongTensor): BxKxK, BERT attention mask for
+        - :param: `hyp_masks` (torch.LongTensor): BxK, BERT attention mask for
                    candidate sentences.
         - :param: `hyp_idf` (torch.Tensor): BxK, idf score of each word
                    piece in the candidate setence
