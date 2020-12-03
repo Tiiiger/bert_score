@@ -3,6 +3,7 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
+- See [#22](https://github.com/Tiiiger/bert_score/issues/22) if you want to replicate our experiments on the COCO Captioning dataset.
 - Updated to version 0.3.6
   - Support custom baseline files [#74](https://github.com/Tiiiger/bert_score/pull/74)
   - The option `--rescale-with-baseline` is changed to `--rescale_with_baseline` so that it is consistent with other options.
