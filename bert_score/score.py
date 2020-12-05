@@ -13,6 +13,7 @@ from transformers import AutoTokenizer
 
 from .utils import (
     get_model,
+    get_tokenizer,
     get_idf_dict,
     bert_cos_score_idf,
     get_bert_embedding,
@@ -99,11 +100,7 @@ def score(
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-    if model_type.startswith("scibert"):
-        tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model_type)
-
+    tokenizer = get_tokenizer(model_type)
     model = get_model(model_type, num_layers, all_layers)
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -217,10 +214,7 @@ def plot_example(
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-    if model_type.startswith("scibert"):
-        tokenizer = AutoTokenizer.from_pretrained(cache_scibert(model_type))
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model_type)
+    tokenizer = get_tokenizer(model_type)
     model = get_model(model_type, num_layers)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)

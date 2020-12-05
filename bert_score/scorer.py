@@ -14,6 +14,7 @@ from transformers import AutoTokenizer
 
 from .utils import (
     get_model,
+    get_tokenizer,
     get_idf_dict,
     bert_cos_score_idf,
     get_bert_embedding,
@@ -96,11 +97,7 @@ class BERTScorer:
 
         # Building model and tokenizer
 
-        if self.model_type.startswith("scibert"):
-            self._tokenizer = AutoTokenizer.from_pretrained(cache_scibert(self.model_type))
-        else:
-            self._tokenizer = AutoTokenizer.from_pretrained(self.model_type)
-
+        self._tokenizer = get_tokenizer(self.model_type)
         self._model = get_model(self.model_type, self.num_layers, self.all_layers)
         self._model.to(self.device)
 

@@ -11,7 +11,7 @@ from torch.nn.utils.rnn import pad_sequence
 from distutils.version import LooseVersion
 
 from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
-from transformers import AutoModel, GPT2Tokenizer
+from transformers import AutoModel, GPT2Tokenizer, AutoTokenizer
 
 from . import __version__
 from transformers import __version__ as trans_version
@@ -105,29 +105,29 @@ def sent_encode(tokenizer, sent):
         return tokenizer.build_inputs_with_special_tokens([])
     elif isinstance(tokenizer, GPT2Tokenizer):
         # for RoBERTa and GPT-2
-        import transformers
-
-        if LooseVersion(transformers.__version__) >= LooseVersion("4.0.0"):
+        if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
             return tokenizer.encode(
                 sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.model_max_length,
                 truncation=True
             )
-        elif LooseVersion(transformers.__version__) >= LooseVersion("3.0.0"):
+        elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
             return tokenizer.encode(
                 sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len, truncation=True
             )
-        else:
+        elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len)
+        else:
+            raise NotImplementedError(f"transformers version {trans_version} is not supported")
     else:
-        import transformers
-
-        if LooseVersion(transformers.__version__) >= LooseVersion("4.0.0"):
+        if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.model_max_length,
                                     truncation=True)
-        elif LooseVersion(transformers.__version__) >= LooseVersion("3.0.0"):
+        elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len, truncation=True)
-        else:
+        elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len)
+        else:
+            raise NotImplementedError(f"transformers version {trans_version} is not supported")
 
 
 def get_model(model_type, num_layers, all_layers=None):
@@ -178,6 +178,18 @@ def get_model(model_type, num_layers, all_layers=None):
             raise ValueError(f"Not supported model architecture: {model_type}")
 
     return model
+
+
+def get_tokenizer(model_type):
+    if model_type.startswith("scibert"):
+        model_type = cache_scibert(model_type)
+    
+    if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
+        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=False)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_type)
+
+    return tokenizer
 
 
 def padding(arr, pad_token, dtype=torch.long):
