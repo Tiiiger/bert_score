@@ -3,7 +3,8 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
-- Support huggingface's transformers version 4.0.0 in the master. Our version 0.3.7 is coming soon. Thanks to public contributers ([#84](https://github.com/Tiiiger/bert_score/pull/84), [#85](https://github.com/Tiiiger/bert_score/issues/85), [#86](https://github.com/Tiiiger/bert_score/pull/86)).
+- Updated to version 0.3.7
+  - Being compatible with Huggingface's transformers version >=4.0.0. Thanks to public contributers ([#84](https://github.com/Tiiiger/bert_score/pull/84), [#85](https://github.com/Tiiiger/bert_score/issues/85), [#86](https://github.com/Tiiiger/bert_score/pull/86)).
 - See [#22](https://github.com/Tiiiger/bert_score/issues/22) if you want to replicate our experiments on the COCO Captioning dataset.
 - Updated to version 0.3.6
   - Support custom baseline files [#74](https://github.com/Tiiiger/bert_score/pull/74)
