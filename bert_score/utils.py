@@ -478,7 +478,7 @@ def cache_scibert(model_type, cache_folder="~/.cache/torch/transformers"):
         return model_type
 
     underscore_model_type = model_type.replace("-", "_")
-    cache_folder = os.path.abspath(cache_folder)
+    cache_folder = os.path.abspath(os.path.expanduser(cache_folder))
     filename = os.path.join(cache_folder, underscore_model_type)
 
     # download SciBERT models

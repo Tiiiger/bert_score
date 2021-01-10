@@ -147,6 +147,26 @@ class TestScore(unittest.TestCase):
             cands, refs, batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True
         )
 
+    def test_score_en_sci(self):
+        (P, R, F), hash_code = bert_score.score(
+            cands, refs, lang='en-sci', return_hash=True
+        )
+
+        self.assertTrue(torch.is_tensor(P))
+        self.assertTrue(torch.is_tensor(R))
+        self.assertTrue(torch.is_tensor(F))
+        self.assertEqual(
+            hash_code, f"scibert-scivocab-uncased_L8_no-idf_version={bert_score.__version__}(hug_trans={ht_version})"
+        )
+        self.assertTrue(
+            (P - torch.tensor([0.9785506725, 0.9363335371, 0.8104354143])).abs_().max() < EPS
+        )
+        self.assertTrue(
+            (R - torch.tensor([0.9785507321, 0.9109522700, 0.7933146954])).abs_().max() < EPS
+        )
+        self.assertTrue(
+            (F - torch.tensor([0.9785507321, 0.9234685898, 0.8017836809])).abs_().max() < EPS
+        )
 
 if __name__ == "__main__":
     unittest.main()
