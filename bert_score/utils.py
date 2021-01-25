@@ -183,7 +183,7 @@ def get_model(model_type, num_layers, all_layers=None):
 def get_tokenizer(model_type):
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
-    
+
     if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
         tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=False)
     else:
@@ -206,7 +206,7 @@ def padding(arr, pad_token, dtype=torch.long):
 def bert_encode(model, x, attention_mask, all_layers=False):
     model.eval()
     with torch.no_grad():
-        out = model(x, attention_mask=attention_mask)
+        out = model(x, attention_mask=attention_mask, output_hidden_states=all_layers)
     if all_layers:
         emb = torch.stack(out[-1], dim=2)
     else:
