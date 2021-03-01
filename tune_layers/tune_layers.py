@@ -39,18 +39,18 @@ def get_wmt16(lang_pair, data_folder="wmt16"):
     return gold_scores, all_refs, all_hyps
 
 
-def get_wmt16_seg_to_bert_score(lang_pair, network, num_layers, idf=False, cache=False, data_folder="wmt16"):
+def get_wmt16_seg_to_bert_score(lang_pair, network, num_layers, idf=False, cache=False, data_folder="wmt16", batch_size=64):
     os.makedirs(f"cache_score/{network}", exist_ok=True)
     path = "cache_score/{}/wmt16_seg_to_{}_{}.pkl".format(network, *lang_pair.split("-"))
 
     gold_scores, refs, cands = get_wmt16(lang_pair, data_folder=data_folder)
     model_type = network
-    scores_idf = bert_score.score(
-        cands, refs, model_type=model_type, num_layers=num_layers, verbose=False, idf=idf, all_layers=True
-    )
-    scores = list(scores_idf)
+    scorer = bert_score.scorer.BERTScorer(model_type=model_type, num_layers=num_layers, idf=idf, all_layers=True)
+    scores = scorer.score(cands, refs, verbose=False, batch_size=batch_size)
+    scores = list(scores)
+    max_length = scorer._tokenizer.max_len_single_sentence
 
-    return scores, gold_scores
+    return scores, gold_scores, max_length
 
 
 def main():
@@ -59,6 +59,7 @@ def main():
     parser.add_argument("-m", "--model", nargs="+", help="models to tune")
     parser.add_argument("-l", "--log_file", default="best_layers_log.txt", help="log file path")
     parser.add_argument("--idf", action="store_true")
+    parser.add_argument("-b", "--batch_size", type=int, default=64)
     parser.add_argument(
         "--lang_pairs",
         nargs="+",
@@ -67,11 +68,18 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.log_file.endswith('.txt'):
+        csv_file = args.log_file.replace('.txt', '.csv')
+    else:
+        csv_file = args.log_file + '.csv'
+
+    torch.set_grad_enabled(False)
+
     networks = args.model
     for network in networks:
         results = defaultdict(dict)
         for lang_pair in tqdm(args.lang_pairs):
-            scores, gold_scores = get_wmt16_seg_to_bert_score(lang_pair, network, 100, idf=args.idf, cache=False)
+            scores, gold_scores, max_length = get_wmt16_seg_to_bert_score(lang_pair, network, 100, idf=args.idf, cache=False, batch_size=args.batch_size)
             for i, score in enumerate(scores[2]):
                 results[lang_pair + " " + str(i)]["%s %s" % (network, "F")] = pearsonr(score, gold_scores)[0]
 
@@ -84,8 +92,10 @@ def main():
                 temp.append(results[f"{lp} {num_layer}"][f"{network} F"])
             corr = np.mean(temp)
             results["avg" + " " + str(num_layer)]["%s %s" % (network, "F")] = corr
+            print(network, num_layer, corr)
             if corr > best_corr:
                 best_layer, best_corr = num_layer, corr
+
         if args.idf:
             msg = f"'{network}' (idf): {best_layer}, # {best_corr}"
         else:
@@ -93,6 +103,9 @@ def main():
         print(msg)
         with open(args.log_file, "a") as f:
             print(msg, file=f)
+        csv_msg = f'{network},{best_layer},{best_corr},,{max_length}'
+        with open(csv_file, 'a') as f:
+            print(csv_msg, file=f)
 
 
 if __name__ == "__main__":

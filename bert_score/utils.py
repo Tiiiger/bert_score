@@ -95,6 +95,50 @@ model2layers = {
     "google/bert_uncased_L-12_H-256_A-4": 11,  # 0.6374004994430261
     "google/bert_uncased_L-12_H-512_A-8": 10,  # 0.65880012149526
     "google/bert_uncased_L-12_H-768_A-12": 9,  # 0.675911357700092
+    'amazon/bort': 0, # 0.41927911053036643
+    'facebook/bart-base': 6, # 0.7122259132414092
+    'facebook/bart-large': 10, # 0.7448671872459683
+    'facebook/bart-large-cnn': 10, # 0.7393148105835096
+    'facebook/bart-large-mnli': 11, # 0.7531665445691358
+    'facebook/bart-large-xsum': 9, # 0.7496408866539556
+    't5-small': 6, # 0.6813843919496912
+    't5-base': 11, # 0.7096044814981418
+    't5-large': 23, # 0.7244153820191929
+    'vinai/bertweet-base': 9, # 0.6529471006118857
+    'microsoft/deberta-base': 9, # 0.7088459455930344
+    'microsoft/deberta-base-mnli': 9, # 0.7395257063907247
+    'microsoft/deberta-large': 16, # 0.7511806792052013
+    'microsoft/deberta-large-mnli': 18, # 0.7736263649679905
+    'microsoft/deberta-xlarge': 18, # 0.7568670944373346
+    'microsoft/deberta-xlarge-mnli': 40, # 0.7780600929333213
+    'YituTech/conv-bert-base': 10, # 0.7058253551080789
+    'YituTech/conv-bert-small': 10, # 0.6544473011107349
+    'YituTech/conv-bert-medium-small': 9, # 0.6590097075123257
+    'allenai/longformer-base-4096': 7, # 0.7089559593129316
+    'microsoft/mpnet-base': 8, # 0.724976539498804
+    'squeezebert/squeezebert-uncased': 9, # 0.6543868703018726
+    'squeezebert/squeezebert-mnli': 9, # 0.6654799051284791
+    'squeezebert/squeezebert-mnli-headless': 9, # 0.6654799051284791
+    'tuner007/pegasus_paraphrase': 15, # 0.7188349436772694
+    'google/pegasus-large': 8, # 0.63960462272448
+    'google/pegasus-xsum': 11, # 0.6836878575233349
+    'sshleifer/tiny-mbart': 2, # 0.028246072231946733
+    'facebook/mbart-large-cc25': 12, # 0.6582922975802958
+    'facebook/mbart-large-50': 12, # 0.6464972230103133
+    'facebook/mbart-large-en-ro': 12, # 0.6791285137459857
+    'facebook/mbart-large-50-many-to-many-mmt': 12, # 0.6904136529270892
+    'facebook/mbart-large-50-one-to-many-mmt': 12, # 0.6847906439540236
+    'allenai/led-base-16384': 6, # 0.7122259170564179
+    'facebook/blenderbot_small-90M': 7, # 0.6489176335400088
+    'facebook/blenderbot-400M-distill': 2, # 0.5874774070540008
+    'microsoft/prophetnet-large-uncased': 4, # 0.586496184234925
+    'microsoft/prophetnet-large-uncased-cnndm': 7, # 0.6478379437729287
+    'SpanBERT/spanbert-base-cased': 8, # 0.6824006863686848
+    'SpanBERT/spanbert-large-cased': 17, # 0.705352690855603
+    'microsoft/xprophetnet-large-wiki100-cased': 7, # 0.5852499775879524
+    'ProsusAI/finbert': 10, # 0.6923213940752796
+    'Vamsi/T5_Paraphrase_Paws': 12, # 0.6941611753807352
+    'ramsrigouthamg/t5_paraphraser': 11, # 0.7200917597031539
 }
 
 
@@ -133,10 +177,16 @@ def sent_encode(tokenizer, sent):
 def get_model(model_type, num_layers, all_layers=None):
     if model_type.startswith("scibert"):
         model = AutoModel.from_pretrained(cache_scibert(model_type))
+    elif 't5' in model_type:
+        from transformers import T5EncoderModel
+        model = T5EncoderModel.from_pretrained(model_type)
     else:
         model = AutoModel.from_pretrained(model_type)
     model.eval()
 
+    if hasattr(model, 'decoder') and hasattr(model, 'encoder'):
+        model = model.encoder
+    
     # drop unused layers
     if not all_layers:
         if hasattr(model, "n_layers"):  # xlm
@@ -174,13 +224,14 @@ def get_model(model_type, num_layers, all_layers=None):
             model.encoder.output_hidden_states = True
         elif hasattr(model, "transformer"):
             model.transformer.output_hidden_states = True
-        else:
-            raise ValueError(f"Not supported model architecture: {model_type}")
+        # else:
+        #     raise ValueError(f"Not supported model architecture: {model_type}")
 
     return model
 
 
 def get_tokenizer(model_type):
+    print(model_type)
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
 
