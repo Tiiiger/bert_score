@@ -4,6 +4,10 @@
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
 - Updated to version 0.3.8
+  - Support 53 new pretrained models including BART, mBART, BORT, DeBERTa, T5, mT5, BERTweet, MPNet, ConvBERT, SqueezeBERT, SpanBERT, PEGASUS, Longformer, LED, Blendbot, etc. Among them, DeBERTa achives higher correlation with human scores than RoBERTa (our default). The correlations are presented in this [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing).
+  - Please consider using `--model_type microsoft/deberta-xlarge-mnli` or `--model_type microsoft/deberta-large-mnli` (faster) if you want the scores to correlate better with human scores.
+  - Add baseline files for DeBERTa models.
+- Updated to version 0.3.7
   - Being compatible with Huggingface's transformers version >=4.0.0. Thanks to public contributers ([#84](https://github.com/Tiiiger/bert_score/pull/84), [#85](https://github.com/Tiiiger/bert_score/issues/85), [#86](https://github.com/Tiiiger/bert_score/pull/86)).
 - See [#22](https://github.com/Tiiiger/bert_score/issues/22) if you want to replicate our experiments on the COCO Captioning dataset.
 - Updated to version 0.3.6
