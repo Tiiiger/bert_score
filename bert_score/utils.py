@@ -114,7 +114,6 @@ model2layers = {
     'YituTech/conv-bert-base': 10, # 0.7058253551080789
     'YituTech/conv-bert-small': 10, # 0.6544473011107349
     'YituTech/conv-bert-medium-small': 9, # 0.6590097075123257
-    'allenai/longformer-base-4096': 7, # 0.7089559593129316
     'microsoft/mpnet-base': 8, # 0.724976539498804
     'squeezebert/squeezebert-uncased': 9, # 0.6543868703018726
     'squeezebert/squeezebert-mnli': 9, # 0.6654799051284791
@@ -139,6 +138,16 @@ model2layers = {
     'ProsusAI/finbert': 10, # 0.6923213940752796
     'Vamsi/T5_Paraphrase_Paws': 12, # 0.6941611753807352
     'ramsrigouthamg/t5_paraphraser': 11, # 0.7200917597031539
+    'microsoft/deberta-v2-xlarge': 10, # 0.7393675784473045
+    'microsoft/deberta-v2-xlarge-mnli': 17, # 0.7620620803716714
+    'microsoft/deberta-v2-xxlarge': 21, # 0.7520547670281869
+    'microsoft/deberta-v2-xxlarge-mnli': 22, # 0.7742603457742682
+    'allenai/longformer-base-4096': 7, # 0.7089559593129316
+    'allenai/longformer-large-4096': 14, # 0.732408493548181
+    'allenai/longformer-large-4096-finetuned-triviaqa': 14, # 0.7365882744744722
+    'zhiheng-huang/bert-base-uncased-embedding-relative-key': 4, # 0.5995636595368777
+    'zhiheng-huang/bert-base-uncased-embedding-relative-key-query': 7, # 0.6303599452145718
+    'zhiheng-huang/bert-large-uncased-whole-word-masking-embedding-relative-key-query': 19, # 0.6896878492850327
 }
 
 
