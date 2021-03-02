@@ -245,7 +245,6 @@ def get_model(model_type, num_layers, all_layers=None):
 
 
 def get_tokenizer(model_type):
-    print(model_type)
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
 
