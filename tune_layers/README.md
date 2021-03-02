@@ -1,7 +1,7 @@
 # Tuning best layer of a pre-trained English model on WMT16 dataset
 
 ### Downloading the dataset
-This download the WMT16 dataset and extract it into a new folder called `wmt16`. If the folder `wmt16` exists, it will skip the process.
+This downloads the WMT16 dataset and extracts it into a new folder called `wmt16`. If the folder `wmt16` exists, it will skip the process.
 ```sh
 bash download_data.sh
 ```
