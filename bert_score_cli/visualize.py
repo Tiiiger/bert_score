@@ -18,9 +18,11 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-r", "--ref", type=str, required=True, help="reference sentence")
     parser.add_argument("-c", "--cand", type=str, required=True, help="candidate sentence")
-    parser.add_argument("-f", "--file", type=str, default="visualize.png", help="name of file to save output matrix in")
     parser.add_argument(
-        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
+        "-f", "--file", type=str, default="visualize.png", help="name of file to save output matrix in",
+    )
+    parser.add_argument(
+        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines",
     )
     parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
 

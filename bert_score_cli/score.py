@@ -17,21 +17,21 @@ def main():
         help='two-letter abbreviation of the language (e.g., en) or "en-sci" for scientific text',
     )
     parser.add_argument(
-        "-m", "--model", default=None, help="BERT model name (default: bert-base-uncased) or path to a pretrain model"
+        "-m", "--model", default=None, help="BERT model name (default: bert-base-uncased) or path to a pretrain model",
     )
     parser.add_argument("-l", "--num_layers", type=int, default=None, help="use first N layer in BERT (default: 8)")
     parser.add_argument("-b", "--batch_size", type=int, default=64, help="batch size (default: 64)")
     parser.add_argument("--nthreads", type=int, default=4, help="number of cpu workers (default: 4)")
     parser.add_argument("--idf", action="store_true", help="BERT Score with IDF scaling")
     parser.add_argument(
-        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines"
+        "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines",
     )
     parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
     parser.add_argument("-s", "--seg_level", action="store_true", help="show individual score of each pair")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-r", "--ref", type=str, nargs="+", required=True, help="reference file path(s) or a string")
     parser.add_argument(
-        "-c", "--cand", type=str, required=True, help="candidate (system outputs) file path or a string"
+        "-c", "--cand", type=str, required=True, help="candidate (system outputs) file path or a string",
     )
 
     args = parser.parse_args()

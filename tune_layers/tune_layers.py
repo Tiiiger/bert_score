@@ -66,10 +66,10 @@ def main():
     )
     args = parser.parse_args()
 
-    if args.log_file.endswith('.txt'):
-        csv_file = args.log_file.replace('.txt', '.csv')
+    if args.log_file.endswith(".txt"):
+        csv_file = args.log_file.replace(".txt", ".csv")
     else:
-        csv_file = args.log_file + '.csv'
+        csv_file = args.log_file + ".csv"
 
     torch.set_grad_enabled(False)
 
@@ -103,13 +103,12 @@ def main():
         print(msg)
         with open(args.log_file, "a") as f:
             print(msg, file=f)
-        csv_msg = f'{network},{best_layer},{best_corr},,{max_length}'
-        with open(csv_file, 'a') as f:
+        csv_msg = f"{network},{best_layer},{best_corr},,{max_length}"
+        with open(csv_file, "a") as f:
             print(csv_msg, file=f)
-        
+
         del scorer
 
 
 if __name__ == "__main__":
     main()
-

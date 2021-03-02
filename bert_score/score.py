@@ -156,7 +156,9 @@ def score(
 
             all_preds = (all_preds - baselines) / (1 - baselines)
         else:
-            print(f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr)
+            print(
+                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr,
+            )
 
     out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
 
@@ -166,7 +168,10 @@ def score(
 
     if return_hash:
         return tuple(
-            [out, get_hash(model_type, num_layers, idf, rescale_with_baseline, use_custom_baseline=use_custom_baseline)]
+            [
+                out,
+                get_hash(model_type, num_layers, idf, rescale_with_baseline, use_custom_baseline=use_custom_baseline,),
+            ]
         )
 
     return out
@@ -247,7 +252,9 @@ def plot_example(
             baselines = torch.from_numpy(pd.read_csv(baseline_path).iloc[num_layers].to_numpy())[1:].float()
             sim = (sim - baselines[2].item()) / (1 - baselines[2].item())
         else:
-            print(f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr)
+            print(
+                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr,
+            )
 
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
     im = ax.imshow(sim, cmap="Blues", vmin=0, vmax=1)

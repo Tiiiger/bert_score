@@ -153,7 +153,7 @@ class BERTScorer:
     @property
     def hash(self):
         return get_hash(
-            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline
+            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline,
         )
 
     def compute_idf(self, sents):
@@ -252,10 +252,10 @@ class BERTScorer:
         idf_dict[self._tokenizer.cls_token_id] = 0
 
         hyp_embedding, masks, padded_idf = get_bert_embedding(
-            [candidate], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False
+            [candidate], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False,
         )
         ref_embedding, masks, padded_idf = get_bert_embedding(
-            [reference], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False
+            [reference], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False,
         )
         ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
         hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
