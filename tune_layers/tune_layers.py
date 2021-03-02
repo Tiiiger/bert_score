@@ -4,7 +4,7 @@ import argparse
 import torch
 import numpy as np
 
-from tqdm.auto import tqdm
+from tqdm.auto import tqdm, trange
 from collections import defaultdict
 from scipy.stats import pearsonr
 
@@ -39,13 +39,11 @@ def get_wmt16(lang_pair, data_folder="wmt16"):
     return gold_scores, all_refs, all_hyps
 
 
-def get_wmt16_seg_to_bert_score(lang_pair, network, num_layers, idf=False, cache=False, data_folder="wmt16", batch_size=64):
-    os.makedirs(f"cache_score/{network}", exist_ok=True)
-    path = "cache_score/{}/wmt16_seg_to_{}_{}.pkl".format(network, *lang_pair.split("-"))
+def get_wmt16_seg_to_bert_score(lang_pair, scorer, data_folder="wmt16", batch_size=64):
+    # os.makedirs(f"cache_score/{network}", exist_ok=True)
+    # path = "cache_score/{}/wmt16_seg_to_{}_{}.pkl".format(network, *lang_pair.split("-"))
 
     gold_scores, refs, cands = get_wmt16(lang_pair, data_folder=data_folder)
-    model_type = network
-    scorer = bert_score.scorer.BERTScorer(model_type=model_type, num_layers=num_layers, idf=idf, all_layers=True)
     scores = scorer.score(cands, refs, verbose=False, batch_size=batch_size)
     scores = list(scores)
     max_length = scorer._tokenizer.max_len_single_sentence
@@ -77,9 +75,11 @@ def main():
 
     networks = args.model
     for network in networks:
+        model_type = network
+        scorer = bert_score.scorer.BERTScorer(model_type=model_type, num_layers=100, idf=False, all_layers=True)
         results = defaultdict(dict)
         for lang_pair in tqdm(args.lang_pairs):
-            scores, gold_scores, max_length = get_wmt16_seg_to_bert_score(lang_pair, network, 100, idf=args.idf, cache=False, batch_size=args.batch_size)
+            scores, gold_scores, max_length = get_wmt16_seg_to_bert_score(lang_pair, scorer, batch_size=args.batch_size)
             for i, score in enumerate(scores[2]):
                 results[lang_pair + " " + str(i)]["%s %s" % (network, "F")] = pearsonr(score, gold_scores)[0]
 
@@ -106,7 +106,10 @@ def main():
         csv_msg = f'{network},{best_layer},{best_corr},,{max_length}'
         with open(csv_file, 'a') as f:
             print(csv_msg, file=f)
+        
+        del scorer
 
 
 if __name__ == "__main__":
     main()
+
