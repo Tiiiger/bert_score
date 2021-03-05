@@ -11,6 +11,16 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.3.7
   - Being compatible with Huggingface's transformers version >=4.0.0. Thanks to public contributers ([#84](https://github.com/Tiiiger/bert_score/pull/84), [#85](https://github.com/Tiiiger/bert_score/issues/85), [#86](https://github.com/Tiiiger/bert_score/pull/86)).
 - See [#22](https://github.com/Tiiiger/bert_score/issues/22) if you want to replicate our experiments on the COCO Captioning dataset.
+
+
+- For people in China, downloading pre-trained weights can be very slow. We provide copies of a few models on Baidu Pan.
+  - [roberta-large](https://pan.baidu.com/s/1MTmGHsZ3ubn7Vr_W-wyEdQ) password: dhe5
+  - [bert-base-chinese](https://pan.baidu.com/s/1THfiCXjWtdGGsCMskQ5svA) password: jvk7
+  - [bert-base-multilingual-cased](https://pan.baidu.com/s/100SBjkLmI7U4pgo_e0q7CQ) password: yx3q
+- [Huggingface's nlp](https://github.com/huggingface/nlp) library includes BERTScore in their metric collection.
+
+<details><summary>Previous updates</summary><p>
+
 - Updated to version 0.3.6
   - Support custom baseline files [#74](https://github.com/Tiiiger/bert_score/pull/74)
   - The option `--rescale-with-baseline` is changed to `--rescale_with_baseline` so that it is consistent with other options.
@@ -19,11 +29,6 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
   - Several improvements related to efficency ([#67](https://github.com/Tiiiger/bert_score/pull/67), [#69](https://github.com/Tiiiger/bert_score/pull/69))
 - Updated to version 0.3.4
   - Compatible with transformers v2.11.0 now (#58)
-- For people in China, downloading pre-trained weights can be very slow. We provide copies of a few models on Baidu Pan.
-  - [roberta-large](https://pan.baidu.com/s/1MTmGHsZ3ubn7Vr_W-wyEdQ) password: dhe5
-  - [bert-base-chinese](https://pan.baidu.com/s/1THfiCXjWtdGGsCMskQ5svA) password: jvk7
-  - [bert-base-multilingual-cased](https://pan.baidu.com/s/100SBjkLmI7U4pgo_e0q7CQ) password: yx3q
-- [Huggingface's nlp](https://github.com/huggingface/nlp) library includes BERTScore in their metric collection.
 - Updated to version 0.3.3
   - Fixing the bug with empty strings [issue #47](https://github.com/Tiiiger/bert_score/issues/47).
   - Supporting 6 [ELECTRA](https://github.com/google-research/electra) models and 24 smaller [BERT](https://github.com/google-research/bert) models.
@@ -35,6 +40,8 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 - Updated to version 0.3.1
   - A new `BERTScorer` object that caches the model to avoid re-loading it multiple times. Please see our [jupyter notebook example](./example/Demo.ipynb) for the usage.
   - Supporting multiple reference sentences for each example. The `score` function now can take a list of lists of strings as the references and return the score between the candidate sentence and its closest reference sentence.
+
+</p></details>
 
 Please see [release logs](https://github.com/Tiiiger/bert_score/releases) for older updates.
 
