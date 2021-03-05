@@ -17,7 +17,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
   - [roberta-large](https://pan.baidu.com/s/1MTmGHsZ3ubn7Vr_W-wyEdQ) password: dhe5
   - [bert-base-chinese](https://pan.baidu.com/s/1THfiCXjWtdGGsCMskQ5svA) password: jvk7
   - [bert-base-multilingual-cased](https://pan.baidu.com/s/100SBjkLmI7U4pgo_e0q7CQ) password: yx3q
-- [Huggingface's nlp](https://github.com/huggingface/nlp) library includes BERTScore in their metric collection.
+- [Huggingface's datasets](https://github.com/huggingface/datasets) library includes BERTScore in their metric collection.
 
 <details><summary>Previous updates</summary><p>
 
