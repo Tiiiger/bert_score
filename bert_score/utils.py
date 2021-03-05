@@ -229,6 +229,11 @@ def get_model(model_type, num_layers, all_layers=None):
                 0 <= num_layers <= len(model.transformer.layer)
             ), f"Invalid num_layers: num_layers should be between 0 and {len(model.transformer.layer)} for {model_type}"
             model.transformer.layer = torch.nn.ModuleList([layer for layer in model.transformer.layer[:num_layers]])
+        elif hasattr(model, "layers"):  # bart
+            assert (
+                0 <= num_layers <= len(model.layers)
+            ), f"Invalid num_layers: num_layers should be between 0 and {len(model.layer)} for {model_type}"
+            model.layers = torch.nn.ModuleList([layer for layer in model.layers[:num_layers]])
         else:
             raise ValueError("Not supported")
     else:
