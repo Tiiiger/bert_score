@@ -148,6 +148,10 @@ model2layers = {
     "zhiheng-huang/bert-base-uncased-embedding-relative-key": 4,  # 0.5995636595368777
     "zhiheng-huang/bert-base-uncased-embedding-relative-key-query": 7,  # 0.6303599452145718
     "zhiheng-huang/bert-large-uncased-whole-word-masking-embedding-relative-key-query": 19,  # 0.6896878492850327
+    'google/mt5-small': 8, # 0.6401166527273479
+    'google/mt5-base': 11, # 0.5663956536597241
+    'google/mt5-large': 19, # 0.6430931371732798
+    'google/mt5-xl': 24, # 0.6707200963021145
 }
 
 
