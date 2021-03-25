@@ -223,6 +223,11 @@ def get_model(model_type, num_layers, all_layers=None):
                     0 <= num_layers <= model.encoder.config.num_hidden_layers
                 ), f"Invalid num_layers: num_layers should be between 0 and {model.encoder.config.num_hidden_layers} for {model_type}"
                 model.encoder.config.num_hidden_layers = num_layers
+            elif hasattr(model.encoder, "block"):  # t5
+                assert (
+                    0 <= num_layers <= len(model.encoder.block)
+                ), f"Invalid num_layers: num_layers should be between 0 and {len(model.encoder.block)} for {model_type}"
+                model.encoder.block = torch.nn.ModuleList([layer for layer in model.encoder.block[:num_layers]])
             else:  # bert, roberta
                 assert (
                     0 <= num_layers <= len(model.encoder.layer)
@@ -236,7 +241,7 @@ def get_model(model_type, num_layers, all_layers=None):
         elif hasattr(model, "layers"):  # bart
             assert (
                 0 <= num_layers <= len(model.layers)
-            ), f"Invalid num_layers: num_layers should be between 0 and {len(model.layer)} for {model_type}"
+            ), f"Invalid num_layers: num_layers should be between 0 and {len(model.layers)} for {model_type}"
             model.layers = torch.nn.ModuleList([layer for layer in model.layers[:num_layers]])
         else:
             raise ValueError("Not supported")

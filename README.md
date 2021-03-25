@@ -4,7 +4,7 @@
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
 - Features to appear in the next version (currently in the master branch):
-  - Fix bugs for mBART
+  - Fix bugs for mBART and T5
   - Support 4 mT5 models as requested ([#93](https://github.com/Tiiiger/bert_score/issues/93))
 - Updated to version 0.3.8
   - Support 53 new pretrained models including BART, mBART, BORT, DeBERTa, T5, BERTweet, MPNet, ConvBERT, SqueezeBERT, SpanBERT, PEGASUS, Longformer, LED, Blendbot, etc. Among them, DeBERTa achives higher correlation with human scores than RoBERTa (our default) on WMT16 dataset. The correlations are presented in this [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing).
