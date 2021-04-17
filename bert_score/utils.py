@@ -152,6 +152,9 @@ model2layers = {
     'google/mt5-base': 11, # 0.5663956536597241
     'google/mt5-large': 19, # 0.6430931371732798
     'google/mt5-xl': 24, # 0.6707200963021145
+    'google/bigbird-roberta-base': 10, # 0.6695606423502717
+    'google/bigbird-roberta-large': 14, # 0.6755874042374509
+    'google/bigbird-base-trivia-itc': 8, # 0.6930725491629892
 }
 
 
