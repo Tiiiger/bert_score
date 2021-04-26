@@ -3,7 +3,8 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
-<!-- - Features to appear in the next version (currently in the master branch): -->
+- Features to appear in the next version (currently in the master branch):
+  - Support 8 SimCSE models
 - Updated to version 0.3.9
   - Support 3 BigBird models
   - Fix bugs for mBART and T5

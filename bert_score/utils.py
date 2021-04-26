@@ -155,6 +155,14 @@ model2layers = {
     'google/bigbird-roberta-base': 10, # 0.6695606423502717
     'google/bigbird-roberta-large': 14, # 0.6755874042374509
     'google/bigbird-base-trivia-itc': 8, # 0.6930725491629892
+    'princeton-nlp/unsup-simcse-bert-base-uncased': 10, # 0.6703066531921142
+    'princeton-nlp/unsup-simcse-bert-large-uncased': 18, # 0.6958302800755326
+    'princeton-nlp/unsup-simcse-roberta-base': 8, # 0.6436615893535319
+    'princeton-nlp/unsup-simcse-roberta-large': 13, # 0.6812864385585965
+    'princeton-nlp/sup-simcse-bert-base-uncased': 10, # 0.7068074935240984
+    'princeton-nlp/sup-simcse-bert-large-uncased': 18, # 0.7111049471332378
+    'princeton-nlp/sup-simcse-roberta-base': 10, # 0.7253123806661946
+    'princeton-nlp/sup-simcse-roberta-large': 16, # 0.7497820277237173
 }
 
 
