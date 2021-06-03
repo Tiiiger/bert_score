@@ -47,10 +47,13 @@ model2layers = {
     "xlnet-large-cased": 7,  # 0.6598800720297179
     "xlm-mlm-en-2048": 6,  # 0.651262570131464
     "xlm-mlm-100-1280": 10,  # 0.6475166424401905
-    "scibert-scivocab-uncased": 8,  # 0.6590354319927313
-    "scibert-scivocab-cased": 9,  # 0.6536375053937445
-    "scibert-basevocab-uncased": 9,  # 0.6748944832703548
-    "scibert-basevocab-cased": 9,  # 0.6524624150542374
+    # "scibert-scivocab-uncased": 8,  # 0.6590354319927313
+    # "scibert-scivocab-cased": 9,  # 0.6536375053937445
+    # "scibert-basevocab-uncased": 9,  # 0.6748944832703548
+    # "scibert-basevocab-cased": 9,  # 0.6524624150542374
+    'allenai/scibert_scivocab_uncased': 8, # 0.6590354393124127
+    'allenai/scibert_scivocab_cased': 9, # 0.6536374902465466
+    'nfliu/scibert_basevocab_uncased': 9, # 0.6748945076082333
     "distilroberta-base": 5,  # 0.6797558139322964
     "distilbert-base-uncased": 5,  # 0.6756659152782033
     "distilbert-base-uncased-distilled-squad": 4,  # 0.6718318036382493

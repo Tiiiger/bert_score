@@ -5,6 +5,7 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 #### News:
 - Features to appear in the next version (currently in the master branch):
   - Support 8 SimCSE models
+  - Fix the support of scibert (to be compatible with transformers >= 4.0.0)
 - Updated to version 0.3.9
   - Support 3 BigBird models
   - Fix bugs for mBART and T5
