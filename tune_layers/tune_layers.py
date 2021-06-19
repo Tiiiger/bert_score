@@ -44,6 +44,8 @@ def get_wmt16_seg_to_bert_score(lang_pair, scorer, data_folder="wmt16", batch_si
     # path = "cache_score/{}/wmt16_seg_to_{}_{}.pkl".format(network, *lang_pair.split("-"))
 
     gold_scores, refs, cands = get_wmt16(lang_pair, data_folder=data_folder)
+    if scorer.idf:
+        scorer.compute_idf(refs)
     scores = scorer.score(cands, refs, verbose=False, batch_size=batch_size)
     scores = list(scores)
     max_length = scorer._tokenizer.max_len_single_sentence
