@@ -272,12 +272,12 @@ def get_model(model_type, num_layers, all_layers=None):
     return model
 
 
-def get_tokenizer(model_type):
+def get_tokenizer(model_type, use_fast=False):
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
 
     if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
-        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast)
     else:
         tokenizer = AutoTokenizer.from_pretrained(model_type)
 

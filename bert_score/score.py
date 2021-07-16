@@ -43,6 +43,7 @@ def score(
     return_hash=False,
     rescale_with_baseline=False,
     baseline_path=None,
+    use_fast_tokenizer=False
 ):
     """
     BERTScore metric.
@@ -67,6 +68,7 @@ def score(
         - :param: `return_hash` (bool): return hash code of the setting
         - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
         - :param: `baseline_path` (str): customized baseline file
+        - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
 
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
@@ -100,7 +102,7 @@ def score(
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-    tokenizer = get_tokenizer(model_type)
+    tokenizer = get_tokenizer(model_type, use_fast_tokenizer)
     model = get_model(model_type, num_layers, all_layers)
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -185,6 +187,7 @@ def plot_example(
     lang=None,
     rescale_with_baseline=False,
     baseline_path=None,
+    use_fast_tokenizer=False,
     fname="",
 ):
     """
@@ -203,6 +206,7 @@ def plot_example(
                   specified when `rescale_with_baseline` is True.
         - :param: `return_hash` (bool): return hash code of the setting
         - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
+        - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
         - :param: `fname` (str): path to save the output plot
     """
     assert isinstance(candidate, str)
@@ -219,7 +223,7 @@ def plot_example(
     if num_layers is None:
         num_layers = model2layers[model_type]
 
-    tokenizer = get_tokenizer(model_type)
+    tokenizer = get_tokenizer(model_type, use_fast_tokenizer)
     model = get_model(model_type, num_layers)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
