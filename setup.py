@@ -21,6 +21,7 @@ setup(
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
+                      'packaging>=20.9',
                       ],
     entry_points={
         'console_scripts': [
