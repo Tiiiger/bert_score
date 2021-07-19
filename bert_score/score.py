@@ -73,8 +73,8 @@ def score(
     Return:
         - :param: `(P, R, F)`: each is of shape (N); N = number of input
                   candidate reference pairs. if returning hashcode, the
-                  output will be ((P, R, F), hashcode). If a candidate have 
-                  multiple references, the returned score of this candidate is 
+                  output will be ((P, R, F), hashcode). If a candidate have
+                  multiple references, the returned score of this candidate is
                   the *best* score among all references.
     """
     assert len(cands) == len(refs), "Different number of candidates and references"
@@ -172,7 +172,9 @@ def score(
         return tuple(
             [
                 out,
-                get_hash(model_type, num_layers, idf, rescale_with_baseline, use_custom_baseline=use_custom_baseline,),
+                get_hash(model_type, num_layers, idf, rescale_with_baseline,
+                         use_custom_baseline=use_custom_baseline,
+                         use_fast_tokenizer=use_fast_tokenizer),
             ]
         )
 

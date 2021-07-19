@@ -555,7 +555,7 @@ def bert_cos_score_idf(
     return preds
 
 
-def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline):
+def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline, use_fast_tokenizer):
     msg = "{}_L{}{}_version={}(hug_trans={})".format(
         model, num_layers, "_idf" if idf else "_no-idf", __version__, trans_version
     )
@@ -564,6 +564,8 @@ def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline)
             msg += "-custom-rescaled"
         else:
             msg += "-rescaled"
+    if use_fast_tokenizer:
+        msg += "_fast-tokenizer"
     return msg
 
 

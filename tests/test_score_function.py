@@ -92,7 +92,7 @@ class TestScore(unittest.TestCase):
             (F - torch.tensor([0.901383399963379, 0.871010780334473, 0.503565192222595])).abs_().max() < EPS
         )
 
-    def test_idf_score_rescale(self):
+    def test_idf_score_rescale_fast_tokenizer(self):
         (P, R, F), hash_code = bert_score.score(
             cands,
             refs,
@@ -103,6 +103,7 @@ class TestScore(unittest.TestCase):
             return_hash=True,
             lang="en",
             rescale_with_baseline=True,
+            use_fast_tokenizer=True,
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -110,16 +111,16 @@ class TestScore(unittest.TestCase):
         self.assertTrue(torch.is_tensor(R))
         self.assertTrue(torch.is_tensor(F))
         self.assertEqual(
-            hash_code, f"roberta-large_L17_idf_version={bert_score.__version__}(hug_trans={ht_version})-rescaled",
+            hash_code, f"roberta-large_L17_idf_version={bert_score.__version__}(hug_trans={ht_version})-rescaled_fast-tokenizer",
         )
         self.assertTrue(
-            (P - torch.tensor([0.903778135776520, 0.854439020156860, 0.375287383794785])).abs_().max() < EPS
+            (P - torch.tensor([0.9060347080230713, 0.8529528975486755, 0.4002779722213745])).abs_().max() < EPS
         )
         self.assertTrue(
-            (R - torch.tensor([0.897446095943451, 0.820639789104462, 0.509167850017548])).abs_().max() < EPS
+            (R - torch.tensor([0.907024621963501, 0.8212453722953796, 0.514383852481842])).abs_().max() < EPS
         )
         self.assertTrue(
-            (F - torch.tensor([0.900772094726562, 0.837753534317017, 0.442304641008377])).abs_().max() < EPS
+            (F - torch.tensor([0.9066815376281738, 0.8373198509216309, 0.45761245489120483])).abs_().max() < EPS
         )
 
     def test_multi_refs(self):
