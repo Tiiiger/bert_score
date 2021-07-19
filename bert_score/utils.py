@@ -279,6 +279,7 @@ def get_tokenizer(model_type, use_fast=False):
     if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
         tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast)
     else:
+        assert not use_fast, "Fast tokenizer is not available for version < 4.0.0"
         tokenizer = AutoTokenizer.from_pretrained(model_type)
 
     return tokenizer
