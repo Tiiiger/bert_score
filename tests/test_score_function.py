@@ -16,13 +16,11 @@ refs = [
     "But the victim's brother says he can't think of anyone who would want to hurt him, saying, \"Things were finally going well for him.\"",
 ]
 
-N_THREADS = 2
-
 
 class TestScore(unittest.TestCase):
     def test_score(self):
         (P, R, F), hash_code = bert_score.score(
-            cands, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3, return_hash=True, nthreads=N_THREADS,
+            cands, refs, model_type="roberta-large", num_layers=17, idf=False, batch_size=3, return_hash=True,
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -44,7 +42,7 @@ class TestScore(unittest.TestCase):
 
     def test_idf_score(self):
         (P, R, F), hash_code = bert_score.score(
-            cands, refs, model_type="roberta-large", num_layers=17, idf=True, batch_size=3, return_hash=True, nthreads=N_THREADS,
+            cands, refs, model_type="roberta-large", num_layers=17, idf=True, batch_size=3, return_hash=True,
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -75,7 +73,6 @@ class TestScore(unittest.TestCase):
             return_hash=True,
             lang="en",
             rescale_with_baseline=True,
-            nthreads=N_THREADS,
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -106,7 +103,6 @@ class TestScore(unittest.TestCase):
             return_hash=True,
             lang="en",
             rescale_with_baseline=True,
-            nthreads=N_THREADS,
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -138,7 +134,6 @@ class TestScore(unittest.TestCase):
             lang="en",
             rescale_with_baseline=True,
             use_fast_tokenizer=True,
-            nthreads=N_THREADS
         )
         # print(P.tolist(), R.tolist(), F.tolist())
 
@@ -162,10 +157,10 @@ class TestScore(unittest.TestCase):
         cands = ["I like lemons."]
         refs = [["I am proud of you.", "I love lemons.", "Go go go."]]
         P_mul, R_mul, F_mul = bert_score.score(
-            cands, refs, batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True, nthreads=N_THREADS
+            cands, refs, batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True
         )
         P_best, R_best, F_best = bert_score.score(
-            cands, [refs[0][1]], batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True, nthreads=N_THREADS
+            cands, [refs[0][1]], batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True,
         )
         self.assertTrue((P_mul - P_best).abs_().max() < EPS)
         self.assertTrue((R_mul - R_best).abs_().max() < EPS)
@@ -182,12 +177,11 @@ class TestScore(unittest.TestCase):
             ["test"],
         ]
         P_mul, R_mul, F_mul = bert_score.score(
-            cands, refs, batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True, nthreads=N_THREADS
+            cands, refs, batch_size=3, return_hash=False, lang="en", rescale_with_baseline=True
         )
 
-    @unittest.skip("temporary disabled along with commented model 'scibert-scivocab-uncased' in utils.model2layers")
     def test_score_en_sci(self):
-        (P, R, F), hash_code = bert_score.score(cands, refs, lang="en-sci", return_hash=True, nthreads=N_THREADS)
+        (P, R, F), hash_code = bert_score.score(cands, refs, lang="en-sci", return_hash=True)
 
         self.assertTrue(torch.is_tensor(P))
         self.assertTrue(torch.is_tensor(R))
