@@ -27,6 +27,7 @@ def main():
         "--rescale_with_baseline", action="store_true", help="Rescaling the numerical score with precomputed baselines",
     )
     parser.add_argument("--baseline_path", default=None, type=str, help="path of custom baseline csv file")
+    parser.add_argument("--use_fast_tokenizer", action="store_false", help="whether to use HF fast tokenizer")
     parser.add_argument("-s", "--seg_level", action="store_true", help="show individual score of each pair")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument("-r", "--ref", type=str, nargs="+", required=True, help="reference file path(s) or a string")
@@ -67,6 +68,7 @@ def main():
         return_hash=True,
         rescale_with_baseline=args.rescale_with_baseline,
         baseline_path=args.baseline_path,
+        use_fast_tokenizer=args.use_fast_tokenizer,
     )
     avg_scores = [s.mean(dim=0) for s in all_preds]
     P = avg_scores[0].cpu().item()

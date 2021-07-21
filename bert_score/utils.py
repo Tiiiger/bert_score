@@ -272,13 +272,14 @@ def get_model(model_type, num_layers, all_layers=None):
     return model
 
 
-def get_tokenizer(model_type):
+def get_tokenizer(model_type, use_fast=False):
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
 
     if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
-        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast)
     else:
+        assert not use_fast, "Fast tokenizer is not available for version < 4.0.0"
         tokenizer = AutoTokenizer.from_pretrained(model_type)
 
     return tokenizer
@@ -555,7 +556,7 @@ def bert_cos_score_idf(
     return preds
 
 
-def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline):
+def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline, use_fast_tokenizer):
     msg = "{}_L{}{}_version={}(hug_trans={})".format(
         model, num_layers, "_idf" if idf else "_no-idf", __version__, trans_version
     )
@@ -564,6 +565,8 @@ def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline)
             msg += "-custom-rescaled"
         else:
             msg += "-rescaled"
+    if use_fast_tokenizer:
+        msg += "_fast-tokenizer"
     return msg
 
 

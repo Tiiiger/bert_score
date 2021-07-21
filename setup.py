@@ -15,12 +15,13 @@ setup(
     packages=find_packages(exclude=["*.tests", "*.tests.*",
                                     "tests.*", "tests"]),
     install_requires=['torch>=1.0.0',
-                      'numpy',
                       'pandas>=1.0.1',
+                      'transformers>=3.0.0'
+                      'numpy',
                       'requests',
                       'tqdm>=4.31.1',
                       'matplotlib',
-                      'transformers>=3.0.0'
+                      'packaging>=20.9',
                       ],
     entry_points={
         'console_scripts': [

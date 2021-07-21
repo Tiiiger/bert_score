@@ -44,6 +44,7 @@ class BERTScorer:
         lang=None,
         rescale_with_baseline=False,
         baseline_path=None,
+        use_fast_tokenizer=False
     ):
         """
         Args:
@@ -65,6 +66,7 @@ class BERTScorer:
             - :param: `return_hash` (bool): return hash code of the setting
             - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
             - :param: `baseline_path` (str): customized baseline file
+            - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
         """
 
         assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
@@ -96,8 +98,8 @@ class BERTScorer:
             self._num_layers = num_layers
 
         # Building model and tokenizer
-
-        self._tokenizer = get_tokenizer(self.model_type)
+        self._use_fast_tokenizer = use_fast_tokenizer
+        self._tokenizer = get_tokenizer(self.model_type, self._use_fast_tokenizer)
         self._model = get_model(self.model_type, self.num_layers, self.all_layers)
         self._model.to(self.device)
 
@@ -151,9 +153,13 @@ class BERTScorer:
         return self._baseline_vals
 
     @property
+    def use_fast_tokenizer(self):
+        return self._use_fast_tokenizer
+
+    @property
     def hash(self):
         return get_hash(
-            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline,
+            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline, self.use_fast_tokenizer
         )
 
     def compute_idf(self, sents):
