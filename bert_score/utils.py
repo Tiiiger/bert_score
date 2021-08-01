@@ -463,12 +463,14 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
 
     if torch.any(hyp_zero_mask):
         print(
-            "Warning: Empty candidate sentence detected; setting precision to be 0.", file=sys.stderr,
+            "Warning: Empty candidate sentence detected; setting raw BERTscores to 0.", file=sys.stderr,
         )
         P = P.masked_fill(hyp_zero_mask, 0.0)
+        R = R.masked_fill(hyp_zero_mask, 0.0)
 
     if torch.any(ref_zero_mask):
-        print("Warning: Empty reference sentence detected; setting recall to be 0.", file=sys.stderr)
+        print("Warning: Empty reference sentence detected; setting raw BERTScores to 0.", file=sys.stderr)
+        P = P.masked_fill(ref_zero_mask, 0.0)
         R = R.masked_fill(ref_zero_mask, 0.0)
 
     F = F.masked_fill(torch.isnan(F), 0.0)
