@@ -205,12 +205,13 @@ The figure will be saved to out.png.
 ### Default Behavior
 
 #### Default Model
-| Language  | Model                        |
-|:---------:|:----------------------------:|
-| en        | roberta-large                |
-| en-sci    | scibert-scivocab-uncased     |
-| zh        | bert-base-chinese            |
-| others    | bert-base-multilingual-cased |
+| Language  | Model                            |
+|:---------:|:--------------------------------:|
+| en        | roberta-large                    |
+| en-sci    | allenai/scibert_scivocab_uncased |
+| zh        | bert-base-chinese                |
+| tr        | dbmdz/bert-base-turkish-cased    |
+| others    | bert-base-multilingual-cased     |
 
 #### Default Layers
 Please see this [Google sheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for the supported models and their performance.
