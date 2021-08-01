@@ -28,7 +28,12 @@ SCIBERT_URL_DICT = {
 
 lang2model = defaultdict(lambda: "bert-base-multilingual-cased")
 lang2model.update(
-    {"en": "roberta-large", "zh": "bert-base-chinese", "en-sci": "scibert-scivocab-uncased",}
+    {
+        "en": "roberta-large",
+        "zh": "bert-base-chinese",
+        "tr": "dbmdz/bert-base-turkish-cased",
+        "en-sci": "allenai/scibert_scivocab_uncased",
+    }
 )
 
 
@@ -166,6 +171,8 @@ model2layers = {
     'princeton-nlp/sup-simcse-bert-large-uncased': 18, # 0.7111049471332378
     'princeton-nlp/sup-simcse-roberta-base': 10, # 0.7253123806661946
     'princeton-nlp/sup-simcse-roberta-large': 16, # 0.7497820277237173
+    'dbmdz/bert-base-turkish-cased': 10, # WMT18 seg en-tr 0.5522827687776142
+    'dbmdz/distilbert-base-turkish-cased': 4, # WMT18 seg en-tr 0.4742268041237113
 }
 
 
