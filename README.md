@@ -9,7 +9,8 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
   - Add scripts for reproducing some results in our paper (See this [folder](./reproduce))
   - Support fast tokenizers in huggingface transformers with `--use_fast_tokenizer`. Notably, you will get different scores because of the difference in the tokenizer implementations ([#106](https://github.com/Tiiiger/bert_score/issues/106)). 
   - Fix non-zero recall problem for empty candidate strings ([#107](https://github.com/Tiiiger/bert_score/issues/107)).
-- Updated to version 0.3.10
+  - Add Turkish BERT Supoort ([#108](https://github.com/Tiiiger/bert_score/issues/108)).
+- Updated to version 0.3.9
   - Support 3 BigBird models
   - Fix bugs for mBART and T5
   - Support 4 mT5 models as requested ([#93](https://github.com/Tiiiger/bert_score/issues/93))
