@@ -3,7 +3,8 @@
 
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020).
 #### News:
-<!-- - Features to appear in the next version (currently in the master branch): -->
+- Features to appear in the next version (currently in the master branch):
+  - Support 3 ByT5 models
 - Updated to version 0.3.10
   - Support 8 SimCSE models
   - Fix the support of scibert (to be compatible with transformers >= 4.0.0)

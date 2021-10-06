@@ -173,6 +173,9 @@ model2layers = {
     'princeton-nlp/sup-simcse-roberta-large': 16, # 0.7497820277237173
     'dbmdz/bert-base-turkish-cased': 10, # WMT18 seg en-tr 0.5522827687776142
     'dbmdz/distilbert-base-turkish-cased': 4, # WMT18 seg en-tr 0.4742268041237113
+    'google/byt5-small': 1, # 0.5100025975052146
+    'google/byt5-base': 17, # 0.5810347173565313
+    'google/byt5-large': 30, # 0.6151895697554877
 }
 
 
