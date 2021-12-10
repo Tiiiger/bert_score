@@ -176,6 +176,12 @@ model2layers = {
     'google/byt5-small': 1, # 0.5100025975052146
     'google/byt5-base': 17, # 0.5810347173565313
     'google/byt5-large': 30, # 0.6151895697554877
+    'microsoft/deberta-v3-xsmall': 10, # 0.6941803815412021
+    'microsoft/deberta-v3-small': 4, # 0.6651551203179679
+    'microsoft/deberta-v3-base': 9, # 0.7261586651018335
+    'microsoft/mdeberta-v3-base': 10, # 0.6778713684091584
+    'microsoft/deberta-v3-large': 12, # 0.6927693082293821
+    'khalidalt/DeBERTa-v3-large-mnli': 18, # 0.7428756686018376
 }
 
 

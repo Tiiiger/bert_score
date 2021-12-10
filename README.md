@@ -8,7 +8,9 @@
 Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text Generation with BERT](https://arxiv.org/abs/1904.09675) (ICLR 2020). We now support about 130 models (see this [spreadsheet](https://docs.google.com/spreadsheets/d/1RKOVpselB98Nnh_EOC4A2BYn8_201tmPODpNWu4w7xI/edit?usp=sharing) for their correlations with human evaluation). Currently, the best model is `microsoft/deberta-xlarge-mnli`, please consider using it instead of the default `roberta-large` in order to have the best correlation with human evaluation.
 
 #### News:
-- Features to appear in the next version (currently in the master branch):
+<!-- - Features to appear in the next version (currently in the master branch): -->
+- Updated to version 0.3.11
+  - Support 6 DeBERTa v3 models
   - Support 3 ByT5 models
 - Updated to version 0.3.10
   - Support 8 SimCSE models
