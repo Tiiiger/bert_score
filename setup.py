@@ -1,4 +1,5 @@
 from io import open
+
 from setuptools import find_packages, setup
 
 setup(

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+import argparse
 import os
 import time
-import argparse
-import torch
 from collections import defaultdict
+
+import torch
 
 import bert_score
 

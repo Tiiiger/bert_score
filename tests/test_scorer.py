@@ -1,7 +1,8 @@
 import unittest
-from transformers import __version__ as ht_version
-import bert_score
 
+from transformers import __version__ as ht_version
+
+import bert_score
 from tests.custom_assertions import CustomAssertions
 
 cands = [

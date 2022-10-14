@@ -1,29 +1,20 @@
 import os
+import pathlib
 import sys
 import time
-import pathlib
-import torch
+import warnings
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
-import warnings
-
-from collections import defaultdict
+import torch
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from transformers import AutoTokenizer
 
-from .utils import (
-    get_model,
-    get_tokenizer,
-    get_idf_dict,
-    bert_cos_score_idf,
-    get_bert_embedding,
-    lang2model,
-    model2layers,
-    get_hash,
-    cache_scibert,
-    sent_encode,
-)
+from .utils import (bert_cos_score_idf, cache_scibert, get_bert_embedding,
+                    get_hash, get_idf_dict, get_model, get_tokenizer,
+                    lang2model, model2layers, sent_encode)
 
 
 class BERTScorer:

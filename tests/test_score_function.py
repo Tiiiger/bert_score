@@ -1,9 +1,9 @@
 import unittest
-import bert_score
+
 from transformers import __version__ as ht_version
 
+import bert_score
 from tests.custom_assertions import CustomAssertions
-
 
 cands = [
     "28-year-old chef found dead in San Francisco mall",

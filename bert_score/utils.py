@@ -1,20 +1,20 @@
-import sys
 import os
-import torch
-from math import log
-from itertools import chain
-from collections import defaultdict, Counter
-from multiprocessing import Pool
+import sys
+from collections import Counter, defaultdict
 from functools import partial
-from tqdm.auto import tqdm
-from torch.nn.utils.rnn import pad_sequence
-from packaging import version
+from itertools import chain
+from math import log
+from multiprocessing import Pool
 
-from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
-from transformers import AutoModel, GPT2Tokenizer, AutoTokenizer
+import torch
+from packaging import version
+from torch.nn.utils.rnn import pad_sequence
+from tqdm.auto import tqdm
+from transformers import (AutoModel, AutoTokenizer, BertConfig, GPT2Tokenizer,
+                          RobertaConfig, XLMConfig, XLNetConfig)
+from transformers import __version__ as trans_version
 
 from . import __version__
-from transformers import __version__ as trans_version
 
 __all__ = []
 

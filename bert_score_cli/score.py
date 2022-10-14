@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import os
 import argparse
+import os
+
 import torch
 
 import bert_score

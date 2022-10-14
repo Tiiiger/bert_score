@@ -1,12 +1,12 @@
+import argparse
 import os
 import re
-import argparse
-import torch
-import numpy as np
-
-from tqdm.auto import tqdm, trange
 from collections import defaultdict
+
+import numpy as np
+import torch
 from scipy.stats import pearsonr
+from tqdm.auto import tqdm, trange
 
 import bert_score
 
