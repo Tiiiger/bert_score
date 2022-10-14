@@ -344,8 +344,11 @@ def get_idf_dict(arr, tokenizer, nthreads=4):
 
     process_partial = partial(process, tokenizer=tokenizer)
 
-    with Pool(nthreads) as p:
-        idf_count.update(chain.from_iterable(p.map(process_partial, arr)))
+    if nthreads > 0:
+        with Pool(nthreads) as p:
+            idf_count.update(chain.from_iterable(p.map(process_partial, arr)))
+    else:
+        idf_count.update(chain.from_iterable(map(process_partial, arr)))
 
     idf_dict = defaultdict(lambda: log((num_docs + 1) / (1)))
     idf_dict.update({idx: log((num_docs + 1) / (c + 1)) for (idx, c) in idf_count.items()})
