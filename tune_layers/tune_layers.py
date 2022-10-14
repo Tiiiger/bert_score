@@ -57,7 +57,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--data", default="wmt16", help="path to wmt16 data")
     parser.add_argument("-m", "--model", nargs="+", help="models to tune")
-    parser.add_argument("-l", "--log_file", default="best_layers_log.txt", help="log file path")
+    parser.add_argument(
+        "-l", "--log_file", default="best_layers_log.txt", help="log file path"
+    )
     parser.add_argument("--idf", action="store_true")
     parser.add_argument("-b", "--batch_size", type=int, default=64)
     parser.add_argument(
@@ -78,12 +80,18 @@ def main():
     networks = args.model
     for network in networks:
         model_type = network
-        scorer = bert_score.scorer.BERTScorer(model_type=model_type, num_layers=100, idf=False, all_layers=True)
+        scorer = bert_score.scorer.BERTScorer(
+            model_type=model_type, num_layers=100, idf=False, all_layers=True
+        )
         results = defaultdict(dict)
         for lang_pair in tqdm(args.lang_pairs):
-            scores, gold_scores, max_length = get_wmt16_seg_to_bert_score(lang_pair, scorer, batch_size=args.batch_size)
+            scores, gold_scores, max_length = get_wmt16_seg_to_bert_score(
+                lang_pair, scorer, batch_size=args.batch_size
+            )
             for i, score in enumerate(scores[2]):
-                results[lang_pair + " " + str(i)]["%s %s" % (network, "F")] = pearsonr(score, gold_scores)[0]
+                results[lang_pair + " " + str(i)]["%s %s" % (network, "F")] = pearsonr(
+                    score, gold_scores
+                )[0]
 
         best_layer, best_corr = 0, 0.0
         for num_layer in range(100):

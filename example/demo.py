@@ -7,4 +7,6 @@ with open("refs.txt") as f:
     refs = [line.strip() for line in f]
 
 (P, R, F), hashname = score(cands, refs, lang="en", return_hash=True)
-print(f"{hashname}: P={P.mean().item():.6f} R={R.mean().item():.6f} F={F.mean().item():.6f}")
+print(
+    f"{hashname}: P={P.mean().item():.6f} R={R.mean().item():.6f} F={F.mean().item():.6f}"
+)

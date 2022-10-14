@@ -56,9 +56,9 @@ model2layers = {
     # "scibert-scivocab-cased": 9,  # 0.6536375053937445
     # "scibert-basevocab-uncased": 9,  # 0.6748944832703548
     # "scibert-basevocab-cased": 9,  # 0.6524624150542374
-    'allenai/scibert_scivocab_uncased': 8, # 0.6590354393124127
-    'allenai/scibert_scivocab_cased': 9, # 0.6536374902465466
-    'nfliu/scibert_basevocab_uncased': 9, # 0.6748945076082333
+    "allenai/scibert_scivocab_uncased": 8,  # 0.6590354393124127
+    "allenai/scibert_scivocab_cased": 9,  # 0.6536374902465466
+    "nfliu/scibert_basevocab_uncased": 9,  # 0.6748945076082333
     "distilroberta-base": 5,  # 0.6797558139322964
     "distilbert-base-uncased": 5,  # 0.6756659152782033
     "distilbert-base-uncased-distilled-squad": 4,  # 0.6718318036382493
@@ -156,32 +156,32 @@ model2layers = {
     "zhiheng-huang/bert-base-uncased-embedding-relative-key": 4,  # 0.5995636595368777
     "zhiheng-huang/bert-base-uncased-embedding-relative-key-query": 7,  # 0.6303599452145718
     "zhiheng-huang/bert-large-uncased-whole-word-masking-embedding-relative-key-query": 19,  # 0.6896878492850327
-    'google/mt5-small': 8, # 0.6401166527273479
-    'google/mt5-base': 11, # 0.5663956536597241
-    'google/mt5-large': 19, # 0.6430931371732798
-    'google/mt5-xl': 24, # 0.6707200963021145
-    'google/bigbird-roberta-base': 10, # 0.6695606423502717
-    'google/bigbird-roberta-large': 14, # 0.6755874042374509
-    'google/bigbird-base-trivia-itc': 8, # 0.6930725491629892
-    'princeton-nlp/unsup-simcse-bert-base-uncased': 10, # 0.6703066531921142
-    'princeton-nlp/unsup-simcse-bert-large-uncased': 18, # 0.6958302800755326
-    'princeton-nlp/unsup-simcse-roberta-base': 8, # 0.6436615893535319
-    'princeton-nlp/unsup-simcse-roberta-large': 13, # 0.6812864385585965
-    'princeton-nlp/sup-simcse-bert-base-uncased': 10, # 0.7068074935240984
-    'princeton-nlp/sup-simcse-bert-large-uncased': 18, # 0.7111049471332378
-    'princeton-nlp/sup-simcse-roberta-base': 10, # 0.7253123806661946
-    'princeton-nlp/sup-simcse-roberta-large': 16, # 0.7497820277237173
-    'dbmdz/bert-base-turkish-cased': 10, # WMT18 seg en-tr 0.5522827687776142
-    'dbmdz/distilbert-base-turkish-cased': 4, # WMT18 seg en-tr 0.4742268041237113
-    'google/byt5-small': 1, # 0.5100025975052146
-    'google/byt5-base': 17, # 0.5810347173565313
-    'google/byt5-large': 30, # 0.6151895697554877
-    'microsoft/deberta-v3-xsmall': 10, # 0.6941803815412021
-    'microsoft/deberta-v3-small': 4, # 0.6651551203179679
-    'microsoft/deberta-v3-base': 9, # 0.7261586651018335
-    'microsoft/mdeberta-v3-base': 10, # 0.6778713684091584
-    'microsoft/deberta-v3-large': 12, # 0.6927693082293821
-    'khalidalt/DeBERTa-v3-large-mnli': 18, # 0.7428756686018376
+    "google/mt5-small": 8,  # 0.6401166527273479
+    "google/mt5-base": 11,  # 0.5663956536597241
+    "google/mt5-large": 19,  # 0.6430931371732798
+    "google/mt5-xl": 24,  # 0.6707200963021145
+    "google/bigbird-roberta-base": 10,  # 0.6695606423502717
+    "google/bigbird-roberta-large": 14,  # 0.6755874042374509
+    "google/bigbird-base-trivia-itc": 8,  # 0.6930725491629892
+    "princeton-nlp/unsup-simcse-bert-base-uncased": 10,  # 0.6703066531921142
+    "princeton-nlp/unsup-simcse-bert-large-uncased": 18,  # 0.6958302800755326
+    "princeton-nlp/unsup-simcse-roberta-base": 8,  # 0.6436615893535319
+    "princeton-nlp/unsup-simcse-roberta-large": 13,  # 0.6812864385585965
+    "princeton-nlp/sup-simcse-bert-base-uncased": 10,  # 0.7068074935240984
+    "princeton-nlp/sup-simcse-bert-large-uncased": 18,  # 0.7111049471332378
+    "princeton-nlp/sup-simcse-roberta-base": 10,  # 0.7253123806661946
+    "princeton-nlp/sup-simcse-roberta-large": 16,  # 0.7497820277237173
+    "dbmdz/bert-base-turkish-cased": 10,  # WMT18 seg en-tr 0.5522827687776142
+    "dbmdz/distilbert-base-turkish-cased": 4,  # WMT18 seg en-tr 0.4742268041237113
+    "google/byt5-small": 1,  # 0.5100025975052146
+    "google/byt5-base": 17,  # 0.5810347173565313
+    "google/byt5-large": 30,  # 0.6151895697554877
+    "microsoft/deberta-v3-xsmall": 10,  # 0.6941803815412021
+    "microsoft/deberta-v3-small": 4,  # 0.6651551203179679
+    "microsoft/deberta-v3-base": 9,  # 0.7261586651018335
+    "microsoft/mdeberta-v3-base": 10,  # 0.6778713684091584
+    "microsoft/deberta-v3-large": 12,  # 0.6927693082293821
+    "khalidalt/DeBERTa-v3-large-mnli": 18,  # 0.7428756686018376
 }
 
 
@@ -202,23 +202,46 @@ def sent_encode(tokenizer, sent):
             )
         elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
             return tokenizer.encode(
-                sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len, truncation=True,
+                sent,
+                add_special_tokens=True,
+                add_prefix_space=True,
+                max_length=tokenizer.max_len,
+                truncation=True,
             )
         elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
-            return tokenizer.encode(sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len)
+            return tokenizer.encode(
+                sent,
+                add_special_tokens=True,
+                add_prefix_space=True,
+                max_length=tokenizer.max_len,
+            )
         else:
-            raise NotImplementedError(f"transformers version {trans_version} is not supported")
+            raise NotImplementedError(
+                f"transformers version {trans_version} is not supported"
+            )
     else:
         if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
             return tokenizer.encode(
-                sent, add_special_tokens=True, max_length=tokenizer.model_max_length, truncation=True,
+                sent,
+                add_special_tokens=True,
+                max_length=tokenizer.model_max_length,
+                truncation=True,
             )
         elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
-            return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len, truncation=True)
+            return tokenizer.encode(
+                sent,
+                add_special_tokens=True,
+                max_length=tokenizer.max_len,
+                truncation=True,
+            )
         elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
-            return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len)
+            return tokenizer.encode(
+                sent, add_special_tokens=True, max_length=tokenizer.max_len
+            )
         else:
-            raise NotImplementedError(f"transformers version {trans_version} is not supported")
+            raise NotImplementedError(
+                f"transformers version {trans_version} is not supported"
+            )
 
 
 def get_model(model_type, num_layers, all_layers=None):
@@ -246,7 +269,9 @@ def get_model(model_type, num_layers, all_layers=None):
             assert (
                 0 <= num_layers <= len(model.layer)
             ), f"Invalid num_layers: num_layers should be between 0 and {len(model.layer)} for {model_type}"
-            model.layer = torch.nn.ModuleList([layer for layer in model.layer[:num_layers]])
+            model.layer = torch.nn.ModuleList(
+                [layer for layer in model.layer[:num_layers]]
+            )
         elif hasattr(model, "encoder"):  # albert
             if hasattr(model.encoder, "albert_layer_groups"):
                 assert (
@@ -257,22 +282,30 @@ def get_model(model_type, num_layers, all_layers=None):
                 assert (
                     0 <= num_layers <= len(model.encoder.block)
                 ), f"Invalid num_layers: num_layers should be between 0 and {len(model.encoder.block)} for {model_type}"
-                model.encoder.block = torch.nn.ModuleList([layer for layer in model.encoder.block[:num_layers]])
+                model.encoder.block = torch.nn.ModuleList(
+                    [layer for layer in model.encoder.block[:num_layers]]
+                )
             else:  # bert, roberta
                 assert (
                     0 <= num_layers <= len(model.encoder.layer)
                 ), f"Invalid num_layers: num_layers should be between 0 and {len(model.encoder.layer)} for {model_type}"
-                model.encoder.layer = torch.nn.ModuleList([layer for layer in model.encoder.layer[:num_layers]])
+                model.encoder.layer = torch.nn.ModuleList(
+                    [layer for layer in model.encoder.layer[:num_layers]]
+                )
         elif hasattr(model, "transformer"):  # bert, roberta
             assert (
                 0 <= num_layers <= len(model.transformer.layer)
             ), f"Invalid num_layers: num_layers should be between 0 and {len(model.transformer.layer)} for {model_type}"
-            model.transformer.layer = torch.nn.ModuleList([layer for layer in model.transformer.layer[:num_layers]])
+            model.transformer.layer = torch.nn.ModuleList(
+                [layer for layer in model.transformer.layer[:num_layers]]
+            )
         elif hasattr(model, "layers"):  # bart
             assert (
                 0 <= num_layers <= len(model.layers)
             ), f"Invalid num_layers: num_layers should be between 0 and {len(model.layers)} for {model_type}"
-            model.layers = torch.nn.ModuleList([layer for layer in model.layers[:num_layers]])
+            model.layers = torch.nn.ModuleList(
+                [layer for layer in model.layers[:num_layers]]
+            )
         else:
             raise ValueError("Not supported")
     else:
@@ -351,7 +384,9 @@ def get_idf_dict(arr, tokenizer, nthreads=4):
         idf_count.update(chain.from_iterable(map(process_partial, arr)))
 
     idf_dict = defaultdict(lambda: log((num_docs + 1) / (1)))
-    idf_dict.update({idx: log((num_docs + 1) / (c + 1)) for (idx, c) in idf_count.items()})
+    idf_dict.update(
+        {idx: log((num_docs + 1) / (c + 1)) for (idx, c) in idf_count.items()}
+    )
     return idf_dict
 
 
@@ -386,7 +421,15 @@ def collate_idf(arr, tokenizer, idf_dict, device="cuda:0"):
     return padded, padded_idf, lens, mask
 
 
-def get_bert_embedding(all_sens, model, tokenizer, idf_dict, batch_size=-1, device="cuda:0", all_layers=False):
+def get_bert_embedding(
+    all_sens,
+    model,
+    tokenizer,
+    idf_dict,
+    batch_size=-1,
+    device="cuda:0",
+    all_layers=False,
+):
     """
     Compute BERT embedding in batches.
 
@@ -399,7 +442,9 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict, batch_size=-1, devi
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
     """
 
-    padded_sens, padded_idf, lens, mask = collate_idf(all_sens, tokenizer, idf_dict, device=device)
+    padded_sens, padded_idf, lens, mask = collate_idf(
+        all_sens, tokenizer, idf_dict, device=device
+    )
 
     if batch_size == -1:
         batch_size = len(all_sens)
@@ -408,7 +453,10 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict, batch_size=-1, devi
     with torch.no_grad():
         for i in range(0, len(all_sens), batch_size):
             batch_embedding = bert_encode(
-                model, padded_sens[i : i + batch_size], attention_mask=mask[i : i + batch_size], all_layers=all_layers,
+                model,
+                padded_sens[i : i + batch_size],
+                attention_mask=mask[i : i + batch_size],
+                all_layers=all_layers,
             )
             embeddings.append(batch_embedding)
             del batch_embedding
@@ -418,7 +466,15 @@ def get_bert_embedding(all_sens, model, tokenizer, idf_dict, batch_size=-1, devi
     return total_embedding, mask, padded_idf
 
 
-def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, hyp_idf, all_layers=False):
+def greedy_cos_idf(
+    ref_embedding,
+    ref_masks,
+    ref_idf,
+    hyp_embedding,
+    hyp_masks,
+    hyp_idf,
+    all_layers=False,
+):
     """
     Compute greedy matching based on cosine similarity.
 
@@ -445,8 +501,18 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
 
     if all_layers:
         B, _, L, D = hyp_embedding.size()
-        hyp_embedding = hyp_embedding.transpose(1, 2).transpose(0, 1).contiguous().view(L * B, hyp_embedding.size(1), D)
-        ref_embedding = ref_embedding.transpose(1, 2).transpose(0, 1).contiguous().view(L * B, ref_embedding.size(1), D)
+        hyp_embedding = (
+            hyp_embedding.transpose(1, 2)
+            .transpose(0, 1)
+            .contiguous()
+            .view(L * B, hyp_embedding.size(1), D)
+        )
+        ref_embedding = (
+            ref_embedding.transpose(1, 2)
+            .transpose(0, 1)
+            .contiguous()
+            .view(L * B, ref_embedding.size(1), D)
+        )
     batch_size = ref_embedding.size(0)
     sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
     masks = torch.bmm(hyp_masks.unsqueeze(2).float(), ref_masks.unsqueeze(1).float())
@@ -466,8 +532,15 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
     precision_scale = hyp_idf.to(word_precision.device)
     recall_scale = ref_idf.to(word_recall.device)
     if all_layers:
-        precision_scale = precision_scale.unsqueeze(0).expand(L, B, -1).contiguous().view_as(word_precision)
-        recall_scale = recall_scale.unsqueeze(0).expand(L, B, -1).contiguous().view_as(word_recall)
+        precision_scale = (
+            precision_scale.unsqueeze(0)
+            .expand(L, B, -1)
+            .contiguous()
+            .view_as(word_precision)
+        )
+        recall_scale = (
+            recall_scale.unsqueeze(0).expand(L, B, -1).contiguous().view_as(word_recall)
+        )
     P = (word_precision * precision_scale).sum(dim=1)
     R = (word_recall * recall_scale).sum(dim=1)
     F = 2 * P * R / (P + R)
@@ -482,13 +555,17 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
 
     if torch.any(hyp_zero_mask):
         print(
-            "Warning: Empty candidate sentence detected; setting raw BERTscores to 0.", file=sys.stderr,
+            "Warning: Empty candidate sentence detected; setting raw BERTscores to 0.",
+            file=sys.stderr,
         )
         P = P.masked_fill(hyp_zero_mask, 0.0)
         R = R.masked_fill(hyp_zero_mask, 0.0)
 
     if torch.any(ref_zero_mask):
-        print("Warning: Empty reference sentence detected; setting raw BERTScores to 0.", file=sys.stderr)
+        print(
+            "Warning: Empty reference sentence detected; setting raw BERTScores to 0.",
+            file=sys.stderr,
+        )
         P = P.masked_fill(ref_zero_mask, 0.0)
         R = R.masked_fill(ref_zero_mask, 0.0)
 
@@ -498,7 +575,15 @@ def greedy_cos_idf(ref_embedding, ref_masks, ref_idf, hyp_embedding, hyp_masks, 
 
 
 def bert_cos_score_idf(
-    model, refs, hyps, tokenizer, idf_dict, verbose=False, batch_size=64, device="cuda:0", all_layers=False,
+    model,
+    refs,
+    hyps,
+    tokenizer,
+    idf_dict,
+    verbose=False,
+    batch_size=64,
+    device="cuda:0",
+    all_layers=False,
 ):
     """
     Compute BERTScore.
@@ -577,7 +662,14 @@ def bert_cos_score_idf(
     return preds
 
 
-def get_hash(model, num_layers, idf, rescale_with_baseline, use_custom_baseline, use_fast_tokenizer):
+def get_hash(
+    model,
+    num_layers,
+    idf,
+    rescale_with_baseline,
+    use_custom_baseline,
+    use_fast_tokenizer,
+):
     msg = "{}_L{}{}_version={}(hug_trans={})".format(
         model, num_layers, "_idf" if idf else "_no-idf", __version__, trans_version
     )
@@ -603,9 +695,7 @@ def cache_scibert(model_type, cache_folder="~/.cache/torch/transformers"):
     if not os.path.exists(filename):
         cmd = f"mkdir -p {cache_folder}; cd {cache_folder};"
         cmd += f"wget {SCIBERT_URL_DICT[model_type]}; tar -xvf {underscore_model_type}.tar;"
-        cmd += (
-            f"rm -f {underscore_model_type}.tar ; cd {underscore_model_type}; tar -zxvf weights.tar.gz; mv weights/* .;"
-        )
+        cmd += f"rm -f {underscore_model_type}.tar ; cd {underscore_model_type}; tar -zxvf weights.tar.gz; mv weights/* .;"
         cmd += f"rm -f weights.tar.gz; rmdir weights; mv bert_config.json config.json;"
         print(cmd)
         print(f"downloading {model_type} model")
@@ -629,6 +719,8 @@ def cache_scibert(model_type, cache_folder="~/.cache/torch/transformers"):
         json_file = os.path.join(filename, "tokenizer_config.json")
         if not os.path.exists(json_file):
             with open(json_file, "w") as f:
-                print('{"do_lower_case": true, "max_len": 512, "init_inputs": []}', file=f)
+                print(
+                    '{"do_lower_case": true, "max_len": 512, "init_inputs": []}', file=f
+                )
 
     return filename

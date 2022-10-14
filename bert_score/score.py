@@ -43,7 +43,7 @@ def score(
     return_hash=False,
     rescale_with_baseline=False,
     baseline_path=None,
-    use_fast_tokenizer=False
+    use_fast_tokenizer=False,
 ):
     """
     BERTScore metric.
@@ -79,7 +79,9 @@ def score(
     """
     assert len(cands) == len(refs), "Different number of candidates and references"
 
-    assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
+    assert (
+        lang is not None or model_type is not None
+    ), "Either lang or model_type should be specified"
 
     ref_group_boundaries = None
     if not isinstance(refs[0], str):
@@ -149,32 +151,48 @@ def score(
     use_custom_baseline = baseline_path is not None
     if rescale_with_baseline:
         if baseline_path is None:
-            baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
+            baseline_path = os.path.join(
+                os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv"
+            )
         if os.path.isfile(baseline_path):
             if not all_layers:
-                baselines = torch.from_numpy(pd.read_csv(baseline_path).iloc[num_layers].to_numpy())[1:].float()
+                baselines = torch.from_numpy(
+                    pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+                )[1:].float()
             else:
-                baselines = torch.from_numpy(pd.read_csv(baseline_path).to_numpy())[:, 1:].unsqueeze(1).float()
+                baselines = (
+                    torch.from_numpy(pd.read_csv(baseline_path).to_numpy())[:, 1:]
+                    .unsqueeze(1)
+                    .float()
+                )
 
             all_preds = (all_preds - baselines) / (1 - baselines)
         else:
             print(
-                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr,
+                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}",
+                file=sys.stderr,
             )
 
     out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
 
     if verbose:
         time_diff = time.perf_counter() - start
-        print(f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec")
+        print(
+            f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec"
+        )
 
     if return_hash:
         return tuple(
             [
                 out,
-                get_hash(model_type, num_layers, idf, rescale_with_baseline,
-                         use_custom_baseline=use_custom_baseline,
-                         use_fast_tokenizer=use_fast_tokenizer),
+                get_hash(
+                    model_type,
+                    num_layers,
+                    idf,
+                    rescale_with_baseline,
+                    use_custom_baseline=use_custom_baseline,
+                    use_fast_tokenizer=use_fast_tokenizer,
+                ),
             ]
         )
 
@@ -214,7 +232,9 @@ def plot_example(
     assert isinstance(candidate, str)
     assert isinstance(reference, str)
 
-    assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
+    assert (
+        lang is not None or model_type is not None
+    ), "Either lang or model_type should be specified"
 
     if rescale_with_baseline:
         assert lang is not None, "Need to specify Language when rescaling with baseline"
@@ -253,13 +273,18 @@ def plot_example(
 
     if rescale_with_baseline:
         if baseline_path is None:
-            baseline_path = os.path.join(os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv")
+            baseline_path = os.path.join(
+                os.path.dirname(__file__), f"rescale_baseline/{lang}/{model_type}.tsv"
+            )
         if os.path.isfile(baseline_path):
-            baselines = torch.from_numpy(pd.read_csv(baseline_path).iloc[num_layers].to_numpy())[1:].float()
+            baselines = torch.from_numpy(
+                pd.read_csv(baseline_path).iloc[num_layers].to_numpy()
+            )[1:].float()
             sim = (sim - baselines[2].item()) / (1 - baselines[2].item())
         else:
             print(
-                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}", file=sys.stderr,
+                f"Warning: Baseline not Found for {model_type} on {lang} at {baseline_path}",
+                file=sys.stderr,
             )
 
     fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))

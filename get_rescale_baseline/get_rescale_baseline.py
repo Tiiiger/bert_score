@@ -30,7 +30,9 @@ def get_data(lang="en"):
             if len(line.split(" ")) < 32 and len(line.split(" ")) > 0:
                 lines.append(line)
 
-    samples = np.random.choice(range(len(lines)), size=(2, len(lines) // 2), replace=False)
+    samples = np.random.choice(
+        range(len(lines)), size=(2, len(lines) // 2), replace=False
+    )
 
     hyp = [lines[i] for i in samples[0]]
     cand = [lines[i] for i in samples[1]]
@@ -46,7 +48,9 @@ def chunk(l, n):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some integers.")
-    parser.add_argument("--lang", type=str, required=True, help="language to compute baseline with")
+    parser.add_argument(
+        "--lang", type=str, required=True, help="language to compute baseline with"
+    )
     parser.add_argument("-m", "--model", nargs="+", help="models to tune")
     parser.add_argument("-b", "--batch_size", type=int, default=64)
 
@@ -65,19 +69,25 @@ if __name__ == "__main__":
             with torch.no_grad():
                 score_means = None
                 count = 0
-                for batches in tqdm(chunk(list(zip(hyp, cand)), 1000), total=len(hyp) / 1000):
+                for batches in tqdm(
+                    chunk(list(zip(hyp, cand)), 1000), total=len(hyp) / 1000
+                ):
                     batch_hyp, batch_cand = zip(*batches)
-                    scores = scorer.score(batch_hyp, batch_cand, batch_size=args.batch_size)
+                    scores = scorer.score(
+                        batch_hyp, batch_cand, batch_size=args.batch_size
+                    )
                     scores = torch.stack(scores, dim=0)
                     if score_means is None:
                         score_means = scores.mean(dim=-1)
                     else:
-                        score_means = score_means * count / (count + len(batches)) + scores.mean(dim=-1) * len(
-                            batches
-                        ) / (count + len(batches))
+                        score_means = score_means * count / (
+                            count + len(batches)
+                        ) + scores.mean(dim=-1) * len(batches) / (count + len(batches))
                     count += len(batches)
 
-            pd_baselines = pd.DataFrame(score_means.numpy().transpose(), columns=["P", "R", "F"])
+            pd_baselines = pd.DataFrame(
+                score_means.numpy().transpose(), columns=["P", "R", "F"]
+            )
             pd_baselines.index.name = "LAYER"
 
             os.makedirs(os.path.dirname(baseline_file_path), exist_ok=True)

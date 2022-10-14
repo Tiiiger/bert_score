@@ -44,7 +44,7 @@ class BERTScorer:
         lang=None,
         rescale_with_baseline=False,
         baseline_path=None,
-        use_fast_tokenizer=False
+        use_fast_tokenizer=False,
     ):
         """
         Args:
@@ -69,10 +69,14 @@ class BERTScorer:
             - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
         """
 
-        assert lang is not None or model_type is not None, "Either lang or model_type should be specified"
+        assert (
+            lang is not None or model_type is not None
+        ), "Either lang or model_type should be specified"
 
         if rescale_with_baseline:
-            assert lang is not None, "Need to specify Language when rescaling with baseline"
+            assert (
+                lang is not None
+            ), "Need to specify Language when rescaling with baseline"
 
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -112,7 +116,8 @@ class BERTScorer:
         self.use_custom_baseline = self.baseline_path is not None
         if self.baseline_path is None:
             self.baseline_path = os.path.join(
-                os.path.dirname(__file__), f"rescale_baseline/{self.lang}/{self.model_type}.tsv"
+                os.path.dirname(__file__),
+                f"rescale_baseline/{self.lang}/{self.model_type}.tsv",
             )
 
     @property
@@ -145,10 +150,16 @@ class BERTScorer:
                     )[1:].float()
                 else:
                     self._baseline_vals = (
-                        torch.from_numpy(pd.read_csv(self.baseline_path).to_numpy())[:, 1:].unsqueeze(1).float()
+                        torch.from_numpy(pd.read_csv(self.baseline_path).to_numpy())[
+                            :, 1:
+                        ]
+                        .unsqueeze(1)
+                        .float()
                     )
             else:
-                raise ValueError(f"Baseline not Found for {self.model_type} on {self.lang} at {self.baseline_path}")
+                raise ValueError(
+                    f"Baseline not Found for {self.model_type} on {self.lang} at {self.baseline_path}"
+                )
 
         return self._baseline_vals
 
@@ -159,7 +170,12 @@ class BERTScorer:
     @property
     def hash(self):
         return get_hash(
-            self.model_type, self.num_layers, self.idf, self.rescale_with_baseline, self.use_custom_baseline, self.use_fast_tokenizer
+            self.model_type,
+            self.num_layers,
+            self.idf,
+            self.rescale_with_baseline,
+            self.use_custom_baseline,
+            self.use_fast_tokenizer,
         )
 
     def compute_idf(self, sents):
@@ -181,8 +197,8 @@ class BERTScorer:
         Return:
             - :param: `(P, R, F)`: each is of shape (N); N = number of input
                       candidate reference pairs. if returning hashcode, the
-                      output will be ((P, R, F), hashcode). If a candidate have 
-                      multiple references, the returned score of this candidate is 
+                      output will be ((P, R, F), hashcode). If a candidate have
+                      multiple references, the returned score of this candidate is
                       the *best* score among all references.
         """
 
@@ -235,7 +251,9 @@ class BERTScorer:
 
         if verbose:
             time_diff = time.perf_counter() - start
-            print(f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec")
+            print(
+                f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec"
+            )
 
         if return_hash:
             out = tuple([out, self.hash])
@@ -258,22 +276,38 @@ class BERTScorer:
         idf_dict[self._tokenizer.cls_token_id] = 0
 
         hyp_embedding, masks, padded_idf = get_bert_embedding(
-            [candidate], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False,
+            [candidate],
+            self._model,
+            self._tokenizer,
+            idf_dict,
+            device=self.device,
+            all_layers=False,
         )
         ref_embedding, masks, padded_idf = get_bert_embedding(
-            [reference], self._model, self._tokenizer, idf_dict, device=self.device, all_layers=False,
+            [reference],
+            self._model,
+            self._tokenizer,
+            idf_dict,
+            device=self.device,
+            all_layers=False,
         )
         ref_embedding.div_(torch.norm(ref_embedding, dim=-1).unsqueeze(-1))
         hyp_embedding.div_(torch.norm(hyp_embedding, dim=-1).unsqueeze(-1))
         sim = torch.bmm(hyp_embedding, ref_embedding.transpose(1, 2))
         sim = sim.squeeze(0).cpu()
 
-        r_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, reference)][1:-1]
-        h_tokens = [self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, candidate)][1:-1]
+        r_tokens = [
+            self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, reference)
+        ][1:-1]
+        h_tokens = [
+            self._tokenizer.decode([i]) for i in sent_encode(self._tokenizer, candidate)
+        ][1:-1]
         sim = sim[1:-1, 1:-1]
 
         if self.rescale_with_baseline:
-            sim = (sim - self.baseline_vals[2].item()) / (1 - self.baseline_vals[2].item())
+            sim = (sim - self.baseline_vals[2].item()) / (
+                1 - self.baseline_vals[2].item()
+            )
 
         fig, ax = plt.subplots(figsize=(len(r_tokens), len(h_tokens)))
         im = ax.imshow(sim, cmap="Blues", vmin=0, vmax=1)
