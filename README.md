@@ -9,6 +9,8 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 
 #### News:
 <!-- - Features to appear in the next version (currently in the master branch): -->
+- Updated to version 0.3.12
+  - Fix setup bug ([#138](https://github.com/Tiiiger/bert_score/pull/138))
 - Updated to version 0.3.11
   - Support 6 DeBERTa v3 models
   - Support 3 ByT5 models
