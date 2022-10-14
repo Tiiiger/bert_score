@@ -8,7 +8,7 @@ from multiprocessing import Pool
 from functools import partial
 from tqdm.auto import tqdm
 from torch.nn.utils.rnn import pad_sequence
-from distutils.version import LooseVersion
+from packaging import version
 
 from transformers import BertConfig, XLNetConfig, XLMConfig, RobertaConfig
 from transformers import AutoModel, GPT2Tokenizer, AutoTokenizer
@@ -192,7 +192,7 @@ def sent_encode(tokenizer, sent):
         return tokenizer.build_inputs_with_special_tokens([])
     elif isinstance(tokenizer, GPT2Tokenizer):
         # for RoBERTa and GPT-2
-        if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
+        if version.parse(trans_version) >= version.parse("4.0.0"):
             return tokenizer.encode(
                 sent,
                 add_special_tokens=True,
@@ -200,22 +200,22 @@ def sent_encode(tokenizer, sent):
                 max_length=tokenizer.model_max_length,
                 truncation=True,
             )
-        elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
+        elif version.parse(trans_version) >= version.parse("3.0.0"):
             return tokenizer.encode(
                 sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len, truncation=True,
             )
-        elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
+        elif version.parse(trans_version) >= version.parse("2.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, add_prefix_space=True, max_length=tokenizer.max_len)
         else:
             raise NotImplementedError(f"transformers version {trans_version} is not supported")
     else:
-        if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
+        if version.parse(trans_version) >= version.parse("4.0.0"):
             return tokenizer.encode(
                 sent, add_special_tokens=True, max_length=tokenizer.model_max_length, truncation=True,
             )
-        elif LooseVersion(trans_version) >= LooseVersion("3.0.0"):
+        elif version.parse(trans_version) >= version.parse("3.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len, truncation=True)
-        elif LooseVersion(trans_version) >= LooseVersion("2.0.0"):
+        elif version.parse(trans_version) >= version.parse("2.0.0"):
             return tokenizer.encode(sent, add_special_tokens=True, max_length=tokenizer.max_len)
         else:
             raise NotImplementedError(f"transformers version {trans_version} is not supported")
@@ -292,7 +292,7 @@ def get_tokenizer(model_type, use_fast=False):
     if model_type.startswith("scibert"):
         model_type = cache_scibert(model_type)
 
-    if LooseVersion(trans_version) >= LooseVersion("4.0.0"):
+    if version.parse(trans_version) >= version.parse("4.0.0"):
         tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast)
     else:
         assert not use_fast, "Fast tokenizer is not available for version < 4.0.0"
