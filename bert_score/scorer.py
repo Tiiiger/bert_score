@@ -1,20 +1,18 @@
 import os
-import pathlib
-import sys
 import time
 import warnings
 from collections import defaultdict
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from transformers import AutoTokenizer
 
-from .utils import (bert_cos_score_idf, cache_scibert, get_bert_embedding,
-                    get_hash, get_idf_dict, get_model, get_tokenizer,
-                    lang2model, model2layers, sent_encode)
+from .utils import (bert_cos_score_idf, get_bert_embedding, get_hash,
+                    get_idf_dict, get_model, get_tokenizer, lang2model,
+                    model2layers, sent_encode)
 
 
 class BERTScorer:
@@ -24,18 +22,18 @@ class BERTScorer:
 
     def __init__(
         self,
-        model_type=None,
-        num_layers=None,
-        batch_size=64,
-        nthreads=4,
-        all_layers=False,
-        idf=False,
-        idf_sents=None,
-        device=None,
-        lang=None,
-        rescale_with_baseline=False,
-        baseline_path=None,
-        use_fast_tokenizer=False,
+        model_type: Optional[str] = None,
+        num_layers: Optional[int] = None,
+        batch_size: int = 64,
+        nthreads: int = 4,
+        all_layers: bool = False,
+        idf: bool = False,
+        idf_sents: Optional[List[str]] = None,
+        device: Optional[str] = None,
+        lang: Optional[str] = None,
+        rescale_with_baseline: bool = False,
+        baseline_path: Optional[str] = None,
+        use_fast_tokenizer: bool = False,
     ):
         """
         Args:
@@ -169,9 +167,10 @@ class BERTScorer:
             self.use_fast_tokenizer,
         )
 
-    def compute_idf(self, sents):
+    def compute_idf(self, sents: List[str]):
         """
         Args:
+            - :param: `sents` (list of str): sentences
 
         """
         if self._idf_dict is not None:
@@ -179,11 +178,24 @@ class BERTScorer:
 
         self._idf_dict = get_idf_dict(sents, self._tokenizer, nthreads=self.nthreads)
 
-    def score(self, cands, refs, verbose=False, batch_size=64, return_hash=False):
+    def score(
+        self,
+        cands: List[str],
+        refs: Union[List[str], List[List[str]]],
+        verbose: bool = False,
+        batch_size: int = 64,
+        return_hash: bool = False,
+    ) -> Union[
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+        Tuple[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], str],
+    ]:
         """
         Args:
             - :param: `cands` (list of str): candidate sentences
             - :param: `refs` (list of str or list of list of str): reference sentences
+            - :param: `verbose` (bool): verbose mode. It prints the progress bar and processing time
+            - :param: `batch_size` (int): batch size
+            - :param: `return_has` (bool): return the hash code
 
         Return:
             - :param: `(P, R, F)`: each is of shape (N); N = number of input
@@ -251,7 +263,7 @@ class BERTScorer:
 
         return out
 
-    def plot_example(self, candidate, reference, fname=""):
+    def plot_example(self, candidate: str, reference: str, fname: str = ""):
         """
         Args:
             - :param: `candidate` (str): a candidate sentence
