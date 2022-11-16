@@ -5,6 +5,7 @@ from functools import partial
 from itertools import chain
 from math import log
 from multiprocessing import Pool
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from packaging import version
@@ -185,7 +186,7 @@ model2layers = {
 }
 
 
-def sent_encode(tokenizer, sent):
+def sent_encode(tokenizer: AutoTokenizer, sent: str):
     "Encoding as sentence based on the tokenizer"
     sent = sent.strip()
     if sent == "":
@@ -244,15 +245,23 @@ def sent_encode(tokenizer, sent):
             )
 
 
-def get_model(model_type, num_layers, all_layers=None):
+def get_model(model_type, num_layers, all_layers=None, dtype="fp32"):
+    assert dtype in {'fp32', 'fp16', 'bf16', 'llm.int8'}, f"dtype={dtype} is not supported"
+    model_kwargs = {}
+    if dtype == 'llm.int8':
+        model_kwargs['load_in_8bit'] = True
+    else:
+        torch_dtype_dict = {'fp32': torch.float32, 'fp16': torch.float16, 'bf16': torch.bfloat16}
+        model_kwargs['torch_dtype'] = torch_dtype_dict[dtype]
+
     if model_type.startswith("scibert"):
-        model = AutoModel.from_pretrained(cache_scibert(model_type))
+        model = AutoModel.from_pretrained(cache_scibert(model_type), **model_kwargs)
     elif "t5" in model_type:
         from transformers import T5EncoderModel
 
-        model = T5EncoderModel.from_pretrained(model_type)
+        model = T5EncoderModel.from_pretrained(model_type, **model_kwargs)
     else:
-        model = AutoModel.from_pretrained(model_type)
+        model = AutoModel.from_pretrained(model_type, **model_kwargs)
     model.eval()
 
     if hasattr(model, "decoder") and hasattr(model, "encoder"):
@@ -345,10 +354,9 @@ def padding(arr, pad_token, dtype=torch.long):
     return padded, lens, mask
 
 
-def bert_encode(model, x, attention_mask, all_layers=False):
+def bert_encode(model, x: torch.Tensor, attention_mask: torch.Tensor, all_layers: bool = False):
     model.eval()
-    with torch.no_grad():
-        out = model(x, attention_mask=attention_mask, output_hidden_states=all_layers)
+    out = model(x, attention_mask=attention_mask, output_hidden_states=all_layers)
     if all_layers:
         emb = torch.stack(out[-1], dim=2)
     else:
@@ -362,7 +370,7 @@ def process(a, tokenizer=None):
     return set(a)
 
 
-def get_idf_dict(arr, tokenizer, nthreads=4):
+def get_idf_dict(arr, tokenizer, nthreads: int = 4):
     """
     Returns mapping from word piece index to its inverse document frequency.
 
@@ -440,6 +448,7 @@ def get_bert_embedding(
         - :param: `idf_dict` (dict) : mapping a word piece index to its
                                inverse document frequency
         - :param: `device` (str): device to use, e.g. 'cpu' or 'cuda'
+        - :param: `all_layers` (bool): return all layer results or not
     """
 
     padded_sens, padded_idf, lens, mask = collate_idf(
@@ -450,16 +459,15 @@ def get_bert_embedding(
         batch_size = len(all_sens)
 
     embeddings = []
-    with torch.no_grad():
-        for i in range(0, len(all_sens), batch_size):
-            batch_embedding = bert_encode(
-                model,
-                padded_sens[i : i + batch_size],
-                attention_mask=mask[i : i + batch_size],
-                all_layers=all_layers,
-            )
-            embeddings.append(batch_embedding)
-            del batch_embedding
+    for i in range(0, len(all_sens), batch_size):
+        batch_embedding = bert_encode(
+            model,
+            padded_sens[i : i + batch_size],
+            attention_mask=mask[i : i + batch_size],
+            all_layers=all_layers,
+        )
+        embeddings.append(batch_embedding)
+        del batch_embedding
 
     total_embedding = torch.cat(embeddings, dim=0)
 
@@ -575,21 +583,21 @@ def greedy_cos_idf(
 
 
 def bert_cos_score_idf(
-    model,
-    refs,
-    hyps,
-    tokenizer,
-    idf_dict,
-    verbose=False,
-    batch_size=64,
-    device="cuda:0",
-    all_layers=False,
+    model: torch.nn.Module,
+    refs: List[str],
+    hyps: List[str],
+    tokenizer: AutoTokenizer,
+    idf_dict: Dict[int, float],
+    verbose: bool = False,
+    batch_size: int = 64,
+    device: str = "cuda:0",
+    all_layers: bool = False,
 ):
     """
     Compute BERTScore.
 
     Args:
-        - :param: `model` : a BERT model in `pytorch_pretrained_bert`
+        - :param: `model` : a BERT model in `transformers`
         - :param: `refs` (list of str): reference sentences
         - :param: `hyps` (list of str): candidate sentences
         - :param: `tokenzier` : a BERT tokenizer corresponds to `model`
@@ -649,15 +657,14 @@ def bert_cos_score_idf(
         print("computing greedy matching.")
         iter_range = tqdm(iter_range)
 
-    with torch.no_grad():
-        for batch_start in iter_range:
-            batch_refs = refs[batch_start : batch_start + batch_size]
-            batch_hyps = hyps[batch_start : batch_start + batch_size]
-            ref_stats = pad_batch_stats(batch_refs, stats_dict, device)
-            hyp_stats = pad_batch_stats(batch_hyps, stats_dict, device)
+    for batch_start in iter_range:
+        batch_refs = refs[batch_start : batch_start + batch_size]
+        batch_hyps = hyps[batch_start : batch_start + batch_size]
+        ref_stats = pad_batch_stats(batch_refs, stats_dict, device)
+        hyp_stats = pad_batch_stats(batch_hyps, stats_dict, device)
 
-            P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats, all_layers)
-            preds.append(torch.stack((P, R, F1), dim=-1).cpu())
+        P, R, F1 = greedy_cos_idf(*ref_stats, *hyp_stats, all_layers)
+        preds.append(torch.stack((P, R, F1), dim=-1).cpu())
     preds = torch.cat(preds, dim=1 if all_layers else 0)
     return preds
 
@@ -669,6 +676,7 @@ def get_hash(
     rescale_with_baseline,
     use_custom_baseline,
     use_fast_tokenizer,
+    dtype,
 ):
     msg = "{}_L{}{}_version={}(hug_trans={})".format(
         model, num_layers, "_idf" if idf else "_no-idf", __version__, trans_version
@@ -680,6 +688,8 @@ def get_hash(
             msg += "-rescaled"
     if use_fast_tokenizer:
         msg += "_fast-tokenizer"
+    if dtype != 'fp32':
+        msg += f"_{dtype}"
     return msg
 
 

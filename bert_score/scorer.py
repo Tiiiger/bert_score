@@ -34,6 +34,7 @@ class BERTScorer:
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         use_fast_tokenizer: bool = False,
+        dtype: str = "fp32",
     ):
         """
         Args:
@@ -56,6 +57,7 @@ class BERTScorer:
             - :param: `rescale_with_baseline` (bool): rescale bertscore with pre-computed baseline
             - :param: `baseline_path` (str): customized baseline file
             - :param: `use_fast_tokenizer` (bool): `use_fast` parameter passed to HF tokenizer
+            - :param: `dtype` (str): dtype 'fp32', 'fp16', 'bf16', or 'llm.int8'
         """
 
         assert (
@@ -93,8 +95,9 @@ class BERTScorer:
         # Building model and tokenizer
         self._use_fast_tokenizer = use_fast_tokenizer
         self._tokenizer = get_tokenizer(self.model_type, self._use_fast_tokenizer)
-        self._model = get_model(self.model_type, self.num_layers, self.all_layers)
+        self._model = get_model(self.model_type, self.num_layers, self.all_layers, dtype=dtype)
         self._model.to(self.device)
+        self._dtype = dtype
 
         self._idf_dict = None
         if idf_sents is not None:
@@ -128,6 +131,10 @@ class BERTScorer:
     @property
     def rescale_with_baseline(self):
         return self._rescale_with_baseline
+
+    @property
+    def dtype(self):
+        return self._dtype
 
     @property
     def baseline_vals(self):
@@ -165,6 +172,7 @@ class BERTScorer:
             self.rescale_with_baseline,
             self.use_custom_baseline,
             self.use_fast_tokenizer,
+            self.dtype,
         )
 
     def compute_idf(self, sents: List[str]):
@@ -185,6 +193,7 @@ class BERTScorer:
         verbose: bool = False,
         batch_size: int = 64,
         return_hash: bool = False,
+        grad_enabled: bool = False,
     ) -> Union[
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
         Tuple[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], str],
@@ -205,63 +214,64 @@ class BERTScorer:
                       the *best* score among all references.
         """
 
-        ref_group_boundaries = None
-        if not isinstance(refs[0], str):
-            ref_group_boundaries = []
-            ori_cands, ori_refs = cands, refs
-            cands, refs = [], []
-            count = 0
-            for cand, ref_group in zip(ori_cands, ori_refs):
-                cands += [cand] * len(ref_group)
-                refs += ref_group
-                ref_group_boundaries.append((count, count + len(ref_group)))
-                count += len(ref_group)
+        with torch.set_grad_enabled(grad_enabled):
+            ref_group_boundaries = None
+            if not isinstance(refs[0], str):
+                ref_group_boundaries = []
+                ori_cands, ori_refs = cands, refs
+                cands, refs = [], []
+                count = 0
+                for cand, ref_group in zip(ori_cands, ori_refs):
+                    cands += [cand] * len(ref_group)
+                    refs += ref_group
+                    ref_group_boundaries.append((count, count + len(ref_group)))
+                    count += len(ref_group)
 
-        if verbose:
-            print("calculating scores...")
-            start = time.perf_counter()
+            if verbose:
+                print("calculating scores...")
+                start = time.perf_counter()
 
-        if self.idf:
-            assert self._idf_dict, "IDF weights are not computed"
-            idf_dict = self._idf_dict
-        else:
-            idf_dict = defaultdict(lambda: 1.0)
-            idf_dict[self._tokenizer.sep_token_id] = 0
-            idf_dict[self._tokenizer.cls_token_id] = 0
+            if self.idf:
+                assert self._idf_dict, "IDF weights are not computed"
+                idf_dict = self._idf_dict
+            else:
+                idf_dict = defaultdict(lambda: 1.0)
+                idf_dict[self._tokenizer.sep_token_id] = 0
+                idf_dict[self._tokenizer.cls_token_id] = 0
 
-        all_preds = bert_cos_score_idf(
-            self._model,
-            refs,
-            cands,
-            self._tokenizer,
-            idf_dict,
-            verbose=verbose,
-            device=self.device,
-            batch_size=batch_size,
-            all_layers=self.all_layers,
-        ).cpu()
+            all_preds = bert_cos_score_idf(
+                self._model,
+                refs,
+                cands,
+                self._tokenizer,
+                idf_dict,
+                verbose=verbose,
+                device=self.device,
+                batch_size=batch_size,
+                all_layers=self.all_layers,
+            ).cpu()
 
-        if ref_group_boundaries is not None:
-            max_preds = []
-            for start, end in ref_group_boundaries:
-                max_preds.append(all_preds[start:end].max(dim=0)[0])
-            all_preds = torch.stack(max_preds, dim=0)
+            if ref_group_boundaries is not None:
+                max_preds = []
+                for start, end in ref_group_boundaries:
+                    max_preds.append(all_preds[start:end].max(dim=0)[0])
+                all_preds = torch.stack(max_preds, dim=0)
 
-        if self.rescale_with_baseline:
-            all_preds = (all_preds - self.baseline_vals) / (1 - self.baseline_vals)
+            if self.rescale_with_baseline:
+                all_preds = (all_preds - self.baseline_vals) / (1 - self.baseline_vals)
 
-        out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
+            out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
 
-        if verbose:
-            time_diff = time.perf_counter() - start
-            print(
-                f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec"
-            )
+            if verbose:
+                time_diff = time.perf_counter() - start
+                print(
+                    f"done in {time_diff:.2f} seconds, {len(refs) / time_diff:.2f} sentences/sec"
+                )
 
-        if return_hash:
-            out = tuple([out, self.hash])
+            if return_hash:
+                out = tuple([out, self.hash])
 
-        return out
+            return out
 
     def plot_example(self, candidate: str, reference: str, fname: str = ""):
         """
