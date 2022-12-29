@@ -107,9 +107,9 @@ def main():
                 best_layer, best_corr = num_layer, corr
 
         if args.idf:
-            msg = f"'{network}' (idf): {best_layer}, # {best_corr}"
+            msg = f'"{network}" (idf): {best_layer}, # {best_corr}'
         else:
-            msg = f"'{network}': {best_layer}, # {best_corr}"
+            msg = f'"{network}": {best_layer}, # {best_corr}'
         print(msg)
         with open(args.log_file, "a") as f:
             print(msg, file=f)

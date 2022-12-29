@@ -27,13 +27,27 @@ SCIBERT_URL_DICT = {
 }
 
 
-lang2model = defaultdict(lambda: "bert-base-multilingual-cased")
+# lang2model = defaultdict(lambda: "bert-base-multilingual-cased")
+# lang2model.update(
+#     {
+#         "en": "roberta-large",
+#         "zh": "bert-base-chinese",
+#         "tr": "dbmdz/bert-base-turkish-cased",
+#         "en-sci": "allenai/scibert_scivocab_uncased",
+#     }
+# )
+lang2model = defaultdict(lambda: "microsoft/mdeberta-v3-base")
 lang2model.update(
     {
-        "en": "roberta-large",
+        "en": "microsoft/deberta-xlarge-mnli",
+        "en-fast": "microsoft/deberta-large-mnli",
+        # "en-fastest": "microsoft/deberta-base-mnli",
+        "en-fastest": "microsoft/deberta-v3-xsmall",
         "zh": "bert-base-chinese",
         "tr": "dbmdz/bert-base-turkish-cased",
         "en-sci": "allenai/scibert_scivocab_uncased",
+        "multi-old": "bert-base-multilingual-cased",
+        "en-old": "roberta-large",
     }
 )
 
@@ -183,6 +197,16 @@ model2layers = {
     "microsoft/mdeberta-v3-base": 10,  # 0.6778713684091584
     "microsoft/deberta-v3-large": 12,  # 0.6927693082293821
     "khalidalt/DeBERTa-v3-large-mnli": 18,  # 0.7428756686018376
+    "gpt2": 7, # 0.6587792580716004
+    "gpt2-medium": 14, # 0.6865984189138378
+    "gpt2-large": 19, # 0.6956269943819383
+    "gpt2-xl": 26, # 0.7032493169658963
+    "facebook/m2m100_418M": 12, # 0.6659020943685535
+    "facebook/m2m100_1.2B": 22, # 0.6885637015508648
+    "facebook/nllb-200-distilled-600M": 12, # 0.701689174893585
+    "facebook/nllb-200-distilled-1.3B": 24, # 0.7163885770258532
+    "facebook/nllb-200-1.3B": 24, # 0.7205681684316941
+    "facebook/nllb-200-3.3B": 24, # 0.728381810024573
 }
 
 

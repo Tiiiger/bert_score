@@ -52,7 +52,7 @@ def main():
     )
     parser.add_argument(
         "--use_fast_tokenizer",
-        action="store_false",
+        action="store_true",
         help="whether to use HF fast tokenizer",
     )
     parser.add_argument(
