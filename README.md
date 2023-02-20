@@ -196,6 +196,12 @@ bert-score-show --lang en -r "There are two bananas on the table." -c "On the ta
 ```
 The figure will be saved to out.png.
 
+5. If you see the following message while using BERTScore, please ignore it. This is expected.
+```
+Some weights of the model checkpoint at roberta-large were not used when initializing RobertaModel: ['lm_head.decoder.weight', 'lm_head.layer_norm.weight', 'lm_head.dense.bias', 'lm_head.layer_norm.bias', 'lm_head.bias', 'lm_head.dense.weight']
+- This IS expected if you are initializing RobertaModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing RobertaModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+```
 
 #### Practical Tips
 
