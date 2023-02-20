@@ -9,6 +9,8 @@ Automatic Evaluation Metric described in the paper [BERTScore: Evaluating Text G
 
 #### News:
 <!-- - Features to appear in the next version (currently in the master branch): -->
+- Updated to version 0.3.13
+  - Fix bug with transformers version > 4.17.0 ([#148](https://github.com/Tiiiger/bert_score/pull/148))
 - Updated to version 0.3.12
   - Having `get_idf_dict` compatible with DDP ([#140](https://github.com/Tiiiger/bert_score/pull/140))
   - Fix setup bug ([#138](https://github.com/Tiiiger/bert_score/pull/138))
