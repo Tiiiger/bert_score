@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 from collections import Counter, defaultdict
 from functools import partial
 from itertools import chain
@@ -554,18 +555,18 @@ def greedy_cos_idf(
         F = F.view(L, B)
 
     if torch.any(hyp_zero_mask):
-        print(
-            "Warning: Empty candidate sentence detected; setting raw BERTscores to 0.",
-            file=sys.stderr,
-        )
+        warning_message = "Empty candidate sentence detected; setting raw BERTscores to 0."
+        warnings.warn(warning_message)
+        sys.stdout.write(warning_message)
+        
         P = P.masked_fill(hyp_zero_mask, 0.0)
         R = R.masked_fill(hyp_zero_mask, 0.0)
 
     if torch.any(ref_zero_mask):
-        print(
-            "Warning: Empty reference sentence detected; setting raw BERTScores to 0.",
-            file=sys.stderr,
-        )
+        warning_message = "Empty reference sentence detected; setting raw BERTscores to 0."
+        warnings.warn(warning_message)
+        sys.stdout.write(warning_message)
+        
         P = P.masked_fill(ref_zero_mask, 0.0)
         R = R.masked_fill(ref_zero_mask, 0.0)
 
