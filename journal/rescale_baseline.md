@@ -9,13 +9,13 @@ For an extreme case, BERTScore computed with the large RoBERTa model often is be
 Although BERTscore correlates highly with human judgment in spite of the above mentioned caveat, BERTScore will
 be easier to interpret and work with if it has a natural range (for example, between 0 and 1).
 Therefore, we seek a method to rescale BERTScore to have an intuitive range.
-Let's denote the BERTScore for a pair of candidate and reference sentence as <img src="https://render.githubusercontent.com/render/math?math=X.">
-Let <img src="https://render.githubusercontent.com/render/math?math=Base"> be a lower bound for BERTScores that we typically observe in practice (i.e. <img src="https://render.githubusercontent.com/render/math?math=-1 < Base < 1">).
-We obtain a rescaled BERTScore <img src="https://render.githubusercontent.com/render/math?math=\hat{X}"> through a simple linear transformation, 
-<img src="https://render.githubusercontent.com/render/math?math=\hat{X} = \frac{X-Base}{1-Base}">.
-With a reliable baseline <img src="https://render.githubusercontent.com/render/math?math=Base">, we will typically observe <img src="https://render.githubusercontent.com/render/math?math=\hat{X}"> to be between 0 and 1.
+Let's denote the BERTScore for a pair of candidate and reference sentence as $`X`$.
+Let $`Base`$ be a lower bound for BERTScores that we typically observe in practice (i.e. $`-1 < Base < 1`$).
+We obtain a rescaled BERTScore $`\hat{X}`$ through a simple linear transformation, 
+$`\hat{X} = \frac{X-Base}{1-Base}`$.
+With a reliable baseline $`Base`$, we will typically observe $`\hat{X}`$ to be between 0 and 1.
 
-We highlight that this rescaling operation does not affect BERTScore's correlation with human judgment, as measured by Pearson's <img src="https://render.githubusercontent.com/render/math?math=r"> and Kendall's <img src="https://render.githubusercontent.com/render/math?math=\tau"> coefficients. So we preserve BERTScore's high correlation as reported in our [study](https://arxiv.org/abs/1904.09675).
+We highlight that this rescaling operation does not affect BERTScore's correlation with human judgment, as measured by Pearson's $`r`$ and Kendall's $`\tau`$ coefficients. So we preserve BERTScore's high correlation as reported in our [study](https://arxiv.org/abs/1904.09675).
 We now describe how we compute a reliable baseline.
 
 For each language, we select a million sentences from some large monolingual corpus.
