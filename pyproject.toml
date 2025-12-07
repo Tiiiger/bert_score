@@ -7,7 +7,19 @@ dependencies = [
     "numpy>=2.2.6",
     "packaging>=20.9",
     "pandas>=1.0.1",
+    "sacrebleu>=2.5.1",
     "torch>=1.0.0",
     "tqdm>=4.31.1",
     "transformers>=3.0.0",
 ]
+
+[tool.setuptools]
+packages = ["bert_score", "bert_score_cli"]
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[dependency-groups]
+dev = []

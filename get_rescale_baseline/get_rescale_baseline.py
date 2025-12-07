@@ -61,37 +61,41 @@ if __name__ == "__main__":
     hyp, cand = get_data(lang=args.lang)
 
     for model_type in args.model:
-        baseline_file_path = f"rescale_baseline/{args.lang}/{model_type}.tsv"
-        if os.path.isfile(baseline_file_path):
-            print(f"{model_type} baseline exists for {args.lang}")
-            continue
-        else:
-            print(f"computing baseline for {model_type} on {args.lang}")
-            scorer = bert_score.BERTScorer(model_type=model_type, all_layers=True)
-            with torch.no_grad():
-                score_means = None
-                count = 0
-                for batches in tqdm(
-                    chunk(list(zip(hyp, cand)), 1000), total=len(hyp) / 1000
-                ):
-                    batch_hyp, batch_cand = zip(*batches)
-                    scores = scorer.score(
-                        batch_hyp, batch_cand, batch_size=args.batch_size
-                    )
-                    scores = torch.stack(scores, dim=0)
-                    if score_means is None:
-                        score_means = scores.mean(dim=-1)
-                    else:
-                        score_means = score_means * count / (
-                            count + len(batches)
-                        ) + scores.mean(dim=-1) * len(batches) / (count + len(batches))
-                    count += len(batches)
+        try:
+            baseline_file_path = f"rescale_baseline/{args.lang}/{model_type}.tsv"
+            if os.path.isfile(baseline_file_path):
+                print(f"{model_type} baseline exists for {args.lang}")
+                continue
+            else:
+                print(f"computing baseline for {model_type} on {args.lang}")
+                scorer = bert_score.BERTScorer(model_type=model_type, all_layers=True)
+                with torch.no_grad():
+                    score_means = None
+                    count = 0
+                    for batches in tqdm(
+                        chunk(list(zip(hyp, cand)), 1000), total=len(hyp) / 1000
+                    ):
+                        batch_hyp, batch_cand = zip(*batches)
+                        scores = scorer.score(
+                            batch_hyp, batch_cand, batch_size=args.batch_size
+                        )
+                        scores = torch.stack(scores, dim=0)
+                        if score_means is None:
+                            score_means = scores.mean(dim=-1)
+                        else:
+                            score_means = score_means * count / (
+                                count + len(batches)
+                            ) + scores.mean(dim=-1) * len(batches) / (count + len(batches))
+                        count += len(batches)
 
-            pd_baselines = pd.DataFrame(
-                score_means.numpy().transpose(), columns=["P", "R", "F"]
-            )
-            pd_baselines.index.name = "LAYER"
+                pd_baselines = pd.DataFrame(
+                    score_means.numpy().transpose(), columns=["P", "R", "F"]
+                )
+                pd_baselines.index.name = "LAYER"
 
-            os.makedirs(os.path.dirname(baseline_file_path), exist_ok=True)
-            pd_baselines.to_csv(baseline_file_path)
-            del scorer
+                os.makedirs(os.path.dirname(baseline_file_path), exist_ok=True)
+                pd_baselines.to_csv(baseline_file_path)
+                del scorer
+        except Exception as e:
+            print(f"Error for {model_type} on {args.lang}: {e}")
+            print("Skipping...")

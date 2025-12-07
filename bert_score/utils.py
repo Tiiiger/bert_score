@@ -251,6 +251,9 @@ def get_model(model_type, num_layers, all_layers=None):
         from transformers import T5EncoderModel
 
         model = T5EncoderModel.from_pretrained(model_type)
+    elif model_type == 'gpt-embedding-large':
+        # TODO: implement gpt-embedding-large support
+        raise NotImplementedError(f"Support for {model_type} is not implemented yet.")
     else:
         model = AutoModel.from_pretrained(model_type)
     model.eval()
