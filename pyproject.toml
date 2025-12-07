@@ -1,0 +1,13 @@
+[project]
+name = "bert-score"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.10.7",
+    "numpy>=2.2.6",
+    "packaging>=20.9",
+    "pandas>=1.0.1",
+    "torch>=1.0.0",
+    "tqdm>=4.31.1",
+    "transformers>=3.0.0",
+]
