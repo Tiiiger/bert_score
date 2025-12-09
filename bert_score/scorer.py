@@ -69,10 +69,17 @@ class BERTScorer:
                 lang is not None
             ), "Need to specify Language when rescaling with baseline"
 
+        print(
+            f"BERTScorer init: start with model_type={model_type} lang={lang} rescale_with_baseline={rescale_with_baseline} "
+            f"idf={idf} all_layers={all_layers} use_fast_tokenizer={use_fast_tokenizer}"
+        )
+
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
             self.device = device
+
+        print(f"BERTScorer init: device resolved to {self.device}")
 
         self._lang = lang
         self._rescale_with_baseline = rescale_with_baseline
@@ -87,20 +94,30 @@ class BERTScorer:
         else:
             self._model_type = model_type
 
+        print(f"BERTScorer init: model_type resolved to {self._model_type}")
+
         if num_layers is None:
             self._num_layers = model2layers[self.model_type]
         else:
             self._num_layers = num_layers
 
+        print(f"BERTScorer init: num_layers resolved to {self._num_layers}")
+
         # Building model and tokenizer
         self._use_fast_tokenizer = use_fast_tokenizer
+        print(f"BERTScorer init: creating tokenizer (fast={self._use_fast_tokenizer})")
         self._tokenizer = get_tokenizer(self.model_type, self._use_fast_tokenizer)
+        print("BERTScorer init: tokenizer created")
+        print("BERTScorer init: creating model")
         self._model = get_model(self.model_type, self.num_layers, self.all_layers)
         self._model.to(self.device)
+        print(f"BERTScorer init: model loaded and moved to {self.device}")
 
         self._idf_dict = None
         if idf_sents is not None:
+            print("BERTScorer init: computing idf for provided sentences")
             self.compute_idf(idf_sents)
+            print("BERTScorer init: idf computed")
 
         self._baseline_vals = None
         self.baseline_path = baseline_path
@@ -110,6 +127,11 @@ class BERTScorer:
                 os.path.dirname(__file__),
                 f"rescale_baseline/{self.lang}/{self.model_type}.tsv",
             )
+
+        print(
+            f"BERTScorer init: baseline_path set to {self.baseline_path} "
+            f"(custom={self.use_custom_baseline})"
+        )
 
     @property
     def lang(self):

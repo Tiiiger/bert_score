@@ -1,5 +1,6 @@
 import os
 import sys
+from dotenv import load_dotenv
 from collections import Counter, defaultdict
 from functools import partial
 from itertools import chain
@@ -17,6 +18,11 @@ from transformers import __version__ as trans_version
 from . import __version__
 
 __all__ = []
+
+load_dotenv()
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+DEFAULT_CACHE_DIR = os.path.expanduser(os.path.join(os.getenv('XDG_CACHE_HOME', '~'), '.cache', 'torch', 'transformers'))
 
 SCIBERT_URL_DICT = {
     "scibert-scivocab-uncased": "https://s3-us-west-2.amazonaws.com/ai2-s2-research/scibert/pytorch_models/scibert_scivocab_uncased.tar",  # recommend by the SciBERT authors
@@ -182,6 +188,12 @@ model2layers = {
     "microsoft/mdeberta-v3-base": 10,  # 0.6778713684091584
     "microsoft/deberta-v3-large": 12,  # 0.6927693082293821
     "khalidalt/DeBERTa-v3-large-mnli": 18,  # 0.7428756686018376
+    "gpt-embedding-large": 8,
+    "Salesforce/SFR-Embedding-Mistral": 8,
+    "intfloat/e5-mistral-7b-instruct": 8,
+    "Alibaba-NLP/gte-Qwen1.5-7B-instruct": 8,
+    "NovaSearch/stella_en_1.5B_v5": 8,
+    "NovaSearch/stella_en_400M_v5": 8
 }
 
 
@@ -245,8 +257,9 @@ def sent_encode(tokenizer, sent):
 
 
 def get_model(model_type, num_layers, all_layers=None):
+    print(f"Loading model {model_type}...")
     if model_type.startswith("scibert"):
-        model = AutoModel.from_pretrained(cache_scibert(model_type))
+        model = AutoModel.from_pretrained(cache_scibert(model_type, cache_folder=DEFAULT_CACHE_DIR)).to(DEVICE).eval()
     elif "t5" in model_type:
         from transformers import T5EncoderModel
 
@@ -255,7 +268,7 @@ def get_model(model_type, num_layers, all_layers=None):
         # TODO: implement gpt-embedding-large support
         raise NotImplementedError(f"Support for {model_type} is not implemented yet.")
     else:
-        model = AutoModel.from_pretrained(model_type)
+        model = AutoModel.from_pretrained(model_type, trust_remote_code=True).to(DEVICE).eval()
     model.eval()
 
     if hasattr(model, "decoder") and hasattr(model, "encoder"):
@@ -318,21 +331,23 @@ def get_model(model_type, num_layers, all_layers=None):
             model.encoder.output_hidden_states = True
         elif hasattr(model, "transformer"):
             model.transformer.output_hidden_states = True
-        # else:
-        #     raise ValueError(f"Not supported model architecture: {model_type}")
+        else:
+            raise ValueError(f"Not supported model architecture: {model_type}")
+
+    print(f"Model {model_type} loaded on {DEVICE}.")
 
     return model
 
 
 def get_tokenizer(model_type, use_fast=False):
     if model_type.startswith("scibert"):
-        model_type = cache_scibert(model_type)
+        model_type = cache_scibert(model_type, cache_folder=DEFAULT_CACHE_DIR)
 
     if version.parse(trans_version) >= version.parse("4.0.0"):
-        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast)
+        tokenizer = AutoTokenizer.from_pretrained(model_type, use_fast=use_fast, trust_remote_code=True)
     else:
         assert not use_fast, "Fast tokenizer is not available for version < 4.0.0"
-        tokenizer = AutoTokenizer.from_pretrained(model_type)
+        tokenizer = AutoTokenizer.from_pretrained(model_type, trust_remote_code=True)
 
     return tokenizer
 
@@ -622,6 +637,7 @@ def bert_cos_score_idf(
         embs = embs.cpu()
         masks = masks.cpu()
         padded_idf = padded_idf.cpu()
+        print(f"embeds shape: {embs.shape}, masks shape: {masks.shape}, padded_idf shape: {padded_idf.shape}")
         for i, sen in enumerate(sen_batch):
             sequence_len = masks[i].sum().item()
             emb = embs[i, :sequence_len]

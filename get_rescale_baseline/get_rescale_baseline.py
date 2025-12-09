@@ -58,27 +58,45 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    print(f"[DEBUG] Arguments parsed: lang={args.lang}, models={args.model}, batch_size={args.batch_size}")
+    print(f"[DEBUG] Loading data for language: {args.lang}")
     hyp, cand = get_data(lang=args.lang)
+    print(f"[DEBUG] Data loaded: {len(hyp)} hypothesis sentences, {len(cand)} candidate sentences")
 
     for model_type in args.model:
+        print(f"\n[DEBUG] Processing model: {model_type}")
         try:
             baseline_file_path = f"rescale_baseline/{args.lang}/{model_type}.tsv"
+            print(f"[DEBUG] Checking if baseline exists at: {baseline_file_path}")
             if os.path.isfile(baseline_file_path):
                 print(f"{model_type} baseline exists for {args.lang}")
                 continue
             else:
                 print(f"computing baseline for {model_type} on {args.lang}")
-                scorer = bert_score.BERTScorer(model_type=model_type, all_layers=True)
+                print(f"[DEBUG] Creating BERTScorer with model_type={model_type}, all_layers=True, lang={args.lang}")
+                scorer = bert_score.BERTScorer(
+                    model_type=model_type,
+                    all_layers=True,
+                    rescale_with_baseline=True,
+                    lang=args.lang
+                )
+                print(f"[DEBUG] BERTScorer created successfully")
+                print(f"Score calculation for {model_type} on {args.lang} started...")
+                print(f"[DEBUG] Starting batch processing with batch_size={args.batch_size}")
                 with torch.no_grad():
                     score_means = None
                     count = 0
-                    for batches in tqdm(
+                    for batch_idx, batches in enumerate(tqdm(
                         chunk(list(zip(hyp, cand)), 1000), total=len(hyp) / 1000
-                    ):
+                    )):
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Processing first batch (size={len(batches)})")
                         batch_hyp, batch_cand = zip(*batches)
                         scores = scorer.score(
-                            batch_hyp, batch_cand, batch_size=args.batch_size
+                            batch_hyp, batch_cand, batch_size=args.batch_size, verbose=True
                         )
+                        if batch_idx == 0:
+                            print(f"[DEBUG] First batch scored successfully")
                         scores = torch.stack(scores, dim=0)
                         if score_means is None:
                             score_means = scores.mean(dim=-1)
@@ -88,14 +106,21 @@ if __name__ == "__main__":
                             ) + scores.mean(dim=-1) * len(batches) / (count + len(batches))
                         count += len(batches)
 
+                print(f"[DEBUG] All batches processed. Creating DataFrame...")
                 pd_baselines = pd.DataFrame(
                     score_means.numpy().transpose(), columns=["P", "R", "F"]
                 )
                 pd_baselines.index.name = "LAYER"
 
+                print(f"[DEBUG] Saving baseline to: {baseline_file_path}")
                 os.makedirs(os.path.dirname(baseline_file_path), exist_ok=True)
                 pd_baselines.to_csv(baseline_file_path)
+                print(f"[DEBUG] Baseline saved successfully")
                 del scorer
+                print(f"[DEBUG] Scorer deleted, moving to next model")
         except Exception as e:
-            print(f"Error for {model_type} on {args.lang}: {e}")
+            print(f"[ERROR] Error for {model_type} on {args.lang}: {e}")
+            import traceback
+            print(f"[ERROR] Full traceback:")
+            traceback.print_exc()
             print("Skipping...")
