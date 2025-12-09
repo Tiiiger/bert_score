@@ -27,7 +27,7 @@ def main():
         "-l",
         "--num_layers",
         type=int,
-        default=None,
+        default=8,
         help="use first N layer in BERT (default: 8)",
     )
     parser.add_argument(
