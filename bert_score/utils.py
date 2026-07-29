@@ -188,6 +188,8 @@ model2layers = {
 def sent_encode(tokenizer, sent):
     "Encoding as sentence based on the tokenizer"
     sent = sent.strip()
+    if tokenizer.model_max_length > 1e30:
+        tokenizer.model_max_length = 512
     if sent == "":
         return tokenizer.build_inputs_with_special_tokens([])
     elif isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, RobertaTokenizer):
