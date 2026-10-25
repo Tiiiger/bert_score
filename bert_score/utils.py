@@ -569,6 +569,7 @@ def greedy_cos_idf(
         P = P.masked_fill(ref_zero_mask, 0.0)
         R = R.masked_fill(ref_zero_mask, 0.0)
 
+    F = F.masked_fill(hyp_zero_mask | ref_zero_mask, 0.0)
     F = F.masked_fill(torch.isnan(F), 0.0)
 
     return P, R, F
